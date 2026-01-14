@@ -240,12 +240,14 @@
               <div>
                 <label class="text-xs text-slate-300/70">Speaker language</label>
                 <select id="fromLang" class="mt-2 w-full rounded-xl bg-slate-950/60 px-3 py-2 text-sm ring-1 ring-white/15 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                  <option value="auto">Auto detect (translation)</option>
                   <option value="es">Spanish</option>
                   <option value="fr">French</option>
                   <option value="de">German</option>
                   <option value="ja">Japanese</option>
                   <option value="pt">Portuguese</option>
                   <option value="it">Italian</option>
+                  <option value="vi">Vietnamese</option>
                 </select>
               </div>
 
@@ -258,6 +260,7 @@
                   <option value="de">German</option>
                   <option value="ja">Japanese</option>
                   <option value="it">Italian</option>
+                  <option value="vi">Vietnamese</option>
                 </select>
               </div>
             </div>
@@ -275,15 +278,35 @@
               <button id="translateBtn" class="rounded-xl bg-indigo-500 px-4 py-3 text-sm font-semibold hover:bg-indigo-400">
                 Translate into your ear
               </button>
+              <button id="micBtn" class="rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15">
+                Speak with mic
+              </button>
               <button id="replyBtn" class="rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold ring-1 ring-white/15 hover:bg-white/15">
                 Generate your reply
               </button>
             </div>
 
             <div class="mt-4 rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
+              <div class="text-xs text-slate-300/70">Playback options</div>
+              <div class="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-200/80">
+                <label class="inline-flex items-center gap-2">
+                  <input id="showTextToggle" type="checkbox" class="accent-indigo-400" checked />
+                  Show translated text
+                </label>
+                <label class="inline-flex items-center gap-2">
+                  <input id="audioToggle" type="checkbox" class="accent-indigo-400" checked />
+                  Play translated audio
+                </label>
+              </div>
+              <p class="mt-2 text-xs text-slate-300/70">
+                Audio uses the built-in Chrome voices on your device. For mic input, choose the speaker language (auto uses your browser language).
+              </p>
+            </div>
+
+            <div class="mt-4 rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
               <div class="text-xs text-slate-300/70">Demo behavior</div>
               <p class="mt-1 text-sm text-slate-200/75">
-                Known phrases get “nuance aware” translations. Unknown phrases still translate, but with a clear simulated label.
+                This demo uses a live translation endpoint when available. If it fails, it falls back to a simulated translation with a clear label. You can enable a tone-aware model in the configuration block.
               </p>
             </div>
           </div>
@@ -306,6 +329,9 @@
                 <div id="earOutput" class="mt-2 text-sm text-slate-100">
                   Type something and click Translate.
                 </div>
+                <button id="playEarBtn" class="mt-3 hidden rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold ring-1 ring-white/15 hover:bg-white/15">
+                  Play translated audio
+                </button>
               </div>
 
               <div class="rounded-2xl bg-slate-950/60 p-4 ring-1 ring-white/10">
@@ -313,16 +339,23 @@
                 <div id="voiceOutput" class="mt-2 text-sm text-slate-100">
                   Click Generate your reply to see what the other person hears.
                 </div>
+                <button id="playVoiceBtn" class="mt-3 hidden rounded-xl bg-white/10 px-3 py-2 text-xs font-semibold ring-1 ring-white/15 hover:bg-white/15">
+                  Play reply audio
+                </button>
               </div>
 
               <div class="rounded-2xl bg-white/5 p-4 ring-1 ring-white/10">
-                <div class="flex items-center justify-between">
+                <div class="flex flex-wrap items-center justify-between gap-2">
                   <div class="text-xs text-slate-300/70">Nuance notes</div>
-                  <span id="nuanceTag" class="rounded-full bg-white/5 px-2 py-1 text-[11px] text-slate-200 ring-1 ring-white/10">Ready</span>
+                  <div class="flex flex-wrap items-center gap-2">
+                    <span id="toneTag" class="rounded-full bg-white/5 px-2 py-1 text-[11px] text-slate-200 ring-1 ring-white/10">Tone: neutral</span>
+                    <span id="languageTag" class="hidden rounded-full bg-white/5 px-2 py-1 text-[11px] text-slate-200 ring-1 ring-white/10"></span>
+                  </div>
                 </div>
                 <p id="nuanceNotes" class="mt-2 text-xs leading-relaxed text-slate-200/75">
                   Ear aims for intent, tone, and idioms, so the meaning feels human.
                 </p>
+                <p id="nuanceStatus" class="mt-2 text-xs text-slate-300/70"></p>
               </div>
             </div>
 
@@ -509,7 +542,7 @@
               </p>
 
               <div class="mt-5 rounded-2xl bg-slate-950/50 p-4 ring-1 ring-white/10 text-xs text-slate-200/70">
-                Privacy note: This demo stores signups locally in your browser by default. When you host it, connect the form to your email provider (Formspree, ConvertKit, Mailchimp, HubSpot, or a backend).
+                Privacy note: This demo sends waitlist signups to your email provider. Configure an auto-reply to send “Thank you for joining our waitlist. We will respond as soon as a spot opens.”
               </div>
             </div>
 
@@ -672,9 +705,27 @@
       $("priceMonthly").addEventListener("click", () => setPricingMode("monthly"));
       $("priceAnnual").addEventListener("click", () => setPricingMode("annual"));
 
-      // Demo translation logic (simulated)
+      // Demo translation logic (live with fallback)
+      const CONFIG = {
+        translateEndpoint: "https://libretranslate.com/translate",
+        waitlistEndpoint: "https://formspree.io/f/yourformid",
+        useOpenAi: false,
+        openAiApiKey: "",
+        openAiModel: "gpt-4o-mini"
+      };
+
       const langLabel = {
-        en: "English", es: "Spanish", fr: "French", de: "German", ja: "Japanese", pt: "Portuguese", it: "Italian"
+        en: "English", es: "Spanish", fr: "French", de: "German", ja: "Japanese", pt: "Portuguese", it: "Italian", vi: "Vietnamese", auto: "Auto"
+      };
+      const langCode = {
+        en: "en-US",
+        es: "es-ES",
+        fr: "fr-FR",
+        de: "de-DE",
+        ja: "ja-JP",
+        pt: "pt-PT",
+        it: "it-IT",
+        vi: "vi-VN"
       };
 
       const knownPhrases = [
@@ -726,7 +777,7 @@
         if (match) {
           return {
             out: match.translation,
-            nuanceTag: match.nuanceTag,
+            tone: match.nuanceTag,
             nuance: match.nuance
           };
         }
@@ -734,9 +785,112 @@
         // Generic simulation
         return {
           out: `[Simulated ${langLabel[from]} → ${langLabel[to]}] ${clean}`,
-          nuanceTag: "Simulated",
+          tone: "Simulated",
           nuance: "This demo is running without a translation API. Connect a real model later, the UI is ready."
         };
+      };
+
+      const parseJsonSafely = (value) => {
+        try {
+          return JSON.parse(value);
+        } catch (error) {
+          return null;
+        }
+      };
+
+      const translateText = async ({ from, to, text }) => {
+        const clean = (text || "").trim();
+        if (!clean) return null;
+
+        const canUseOpenAi = CONFIG.useOpenAi && CONFIG.openAiApiKey;
+        if (canUseOpenAi) {
+          try {
+            const response = await fetch("https://api.openai.com/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${CONFIG.openAiApiKey}`
+              },
+              body: JSON.stringify({
+                model: CONFIG.openAiModel,
+                messages: [
+                  {
+                    role: "system",
+                    content: "You are a translation assistant. Return JSON only with keys: translation, tone, notes, detected_language."
+                  },
+                  {
+                    role: "user",
+                    content: `Translate to ${langLabel[to]}. If the input language is unclear, detect it. Preserve intent, tone, and idioms, and add a short note for implied meaning. Text: ${clean}`
+                  }
+                ],
+                temperature: 0.2,
+                response_format: { type: "json_object" }
+              })
+            });
+
+            if (!response.ok) throw new Error("OpenAI translation failed");
+            const data = await response.json();
+            const content = data?.choices?.[0]?.message?.content || "{}";
+            const parsed = parseJsonSafely(content);
+
+            if (!parsed?.translation) throw new Error("Missing translation");
+
+            return {
+              out: parsed.translation,
+              tone: parsed.tone || "Context aware",
+              nuance: parsed.notes || "Translation includes inferred intent and tone.",
+              detectedLanguage: parsed.detected_language || null,
+              status: "Tone analysis active"
+            };
+          } catch (error) {
+            return simulateTranslate({ from, to, text });
+          }
+        }
+
+        try {
+          const response = await fetch(CONFIG.translateEndpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              q: clean,
+              source: from === "auto" ? "auto" : from,
+              target: to,
+              format: "text"
+            })
+          });
+
+          if (!response.ok) throw new Error("Translation failed");
+          const data = await response.json();
+
+          if (!data?.translatedText) throw new Error("Missing translation");
+
+          return {
+            out: data.translatedText,
+            tone: "Live translation",
+            nuance: "Live translation powered by a public endpoint. Swap in your own provider for production.",
+            detectedLanguage: data.detectedLanguage || null,
+            status: "Live translation"
+          };
+        } catch (error) {
+          return simulateTranslate({ from, to, text });
+        }
+      };
+
+      const pickVoice = (lang) => {
+        const voices = window.speechSynthesis.getVoices();
+        const langKey = (langCode[lang] || lang || "").toLowerCase();
+        const exact = voices.find(v => v.lang?.toLowerCase() === langKey);
+        return exact || voices.find(v => v.lang?.toLowerCase().startsWith(langKey.slice(0, 2))) || voices[0];
+      };
+
+      const speakText = (text, lang) => {
+        if (!("speechSynthesis" in window)) return;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = langCode[lang] || lang;
+        const voice = pickVoice(lang);
+        if (voice) utterance.voice = voice;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
       };
 
       // Demo reply generator (simple, friendly)
@@ -755,12 +909,13 @@
           de: "Perfekt, danke. Machen wir das so, ich melde mich gleich wieder.",
           it: "Perfetto, grazie. Facciamo così, ti ricontatto a breve.",
           ja: "了解です、ありがとうございます。その方向で進めましょう。すぐにフォローします。",
-          pt: "Perfeito, obrigado. Vamos fazer assim, eu retorno em breve."
+          pt: "Perfeito, obrigado. Vamos fazer assim, eu retorno em breve.",
+          vi: "Rõ rồi, cảm ơn bạn. Mình sẽ làm như vậy và sẽ phản hồi sớm."
         };
 
         return {
           out: reply[from] || replyEn,
-          nuanceTag: tag,
+          tone: tag,
           nuance: "Ear tries to keep your reply polite, natural, and aligned with the conversation’s tone."
         };
       };
@@ -771,17 +926,39 @@
       };
       $("speakerText").addEventListener("input", updateCharCount);
 
-      const runTranslate = () => {
+      const runTranslate = async () => {
         const from = $("fromLang").value;
         const to = $("toLang").value;
         const text = $("speakerText").value;
 
-        const res = simulateTranslate({ from, to, text });
+        const res = await translateText({ from, to, text });
         if (!res) return;
 
-        $("earOutput").textContent = res.out;
-        $("nuanceTag").textContent = res.nuanceTag;
+        const showText = $("showTextToggle").checked;
+        $("earOutput").textContent = showText ? res.out : "Translated audio ready (text hidden).";
+        const detectedLanguage = res.detectedLanguage ? `Detected: ${res.detectedLanguage}` : "";
+        $("toneTag").textContent = `Tone: ${res.tone || "neutral"}`;
+        const languageTag = $("languageTag");
+        if (detectedLanguage) {
+          languageTag.textContent = detectedLanguage;
+          languageTag.classList.remove("hidden");
+        } else {
+          languageTag.classList.add("hidden");
+          languageTag.textContent = "";
+        }
         $("nuanceNotes").textContent = res.nuance;
+        $("nuanceStatus").textContent = res.status || "";
+
+        const playEarBtn = $("playEarBtn");
+        const shouldPlayAudio = $("audioToggle").checked;
+        if (shouldPlayAudio) {
+          speakText(res.out, to);
+          playEarBtn.classList.remove("hidden");
+        } else {
+          playEarBtn.classList.add("hidden");
+        }
+
+        playEarBtn.onclick = () => speakText(res.out, to);
       };
 
       const runReply = () => {
@@ -793,11 +970,16 @@
         if (!res) return;
 
         $("voiceOutput").textContent = res.out;
-        $("nuanceTag").textContent = res.nuanceTag;
+        $("toneTag").textContent = `Tone: ${res.tone || "conversational"}`;
         $("nuanceNotes").textContent = res.nuance;
+        $("nuanceStatus").textContent = "Reply generated";
+
+        const playVoiceBtn = $("playVoiceBtn");
+        playVoiceBtn.classList.remove("hidden");
+        playVoiceBtn.onclick = () => speakText(res.out, from);
       };
 
-      $("translateBtn").addEventListener("click", runTranslate);
+      $("translateBtn").addEventListener("click", () => runTranslate());
       $("replyBtn").addEventListener("click", runReply);
 
       $("speakerText").addEventListener("keydown", (e) => {
@@ -820,11 +1002,59 @@
         updateCharCount();
         $("earOutput").textContent = "Type something and click Translate.";
         $("voiceOutput").textContent = "Click Generate your reply to see what the other person hears.";
-        $("nuanceTag").textContent = "Ready";
+        $("toneTag").textContent = "Tone: neutral";
+        $("languageTag").classList.add("hidden");
+        $("languageTag").textContent = "";
         $("nuanceNotes").textContent = "Ear aims for intent, tone, and idioms, so the meaning feels human.";
+        $("nuanceStatus").textContent = "";
+        $("playEarBtn").classList.add("hidden");
+        $("playVoiceBtn").classList.add("hidden");
       });
 
-      // Waitlist form (local storage)
+      // Speech-to-text (Chrome)
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      let recognizer = null;
+      if (SpeechRecognition) {
+        recognizer = new SpeechRecognition();
+        recognizer.continuous = false;
+        recognizer.interimResults = false;
+      }
+
+      $("micBtn").addEventListener("click", () => {
+        if (!recognizer) {
+          $("toneTag").textContent = "Tone: unavailable";
+          $("nuanceNotes").textContent = "Speech recognition is not supported in this browser.";
+          $("nuanceStatus").textContent = "Microphone not supported";
+          return;
+        }
+
+        const from = $("fromLang").value;
+        recognizer.lang = from === "auto" ? navigator.language : (langCode[from] || from);
+        $("micBtn").textContent = "Listening...";
+        $("micBtn").disabled = true;
+
+        recognizer.onresult = (event) => {
+          const transcript = event.results?.[0]?.[0]?.transcript || "";
+          $("speakerText").value = transcript;
+          updateCharCount();
+          runTranslate();
+        };
+
+        recognizer.onerror = () => {
+          $("toneTag").textContent = "Tone: error";
+          $("nuanceNotes").textContent = "Could not access microphone. Check permissions.";
+          $("nuanceStatus").textContent = "Microphone error";
+        };
+
+        recognizer.onend = () => {
+          $("micBtn").textContent = "Speak with mic";
+          $("micBtn").disabled = false;
+        };
+
+        recognizer.start();
+      });
+
+      // Waitlist form (email provider)
       $("waitlistForm").addEventListener("submit", (e) => {
         e.preventDefault();
         const payload = {
@@ -836,20 +1066,41 @@
 
         if (!payload.email) return;
 
-        const key = "ear_waitlist";
-        const existing = JSON.parse(localStorage.getItem(key) || "[]");
-        existing.unshift(payload);
-        localStorage.setItem(key, JSON.stringify(existing.slice(0, 200)));
-
         const msg = $("formMsg");
-        msg.classList.remove("hidden");
-        msg.textContent = "You’re on the waitlist (saved locally for this demo). When you host, connect this to your email system.";
-        $("waitlistForm").reset();
+        const sendForm = async () => {
+          if (!CONFIG.waitlistEndpoint || CONFIG.waitlistEndpoint.includes("yourformid")) {
+            msg.classList.remove("hidden");
+            msg.textContent = "Waitlist email is not configured yet. Update CONFIG.waitlistEndpoint with your Formspree (or other) URL.";
+            return;
+          }
+
+          try {
+            const response = await fetch(CONFIG.waitlistEndpoint, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Accept": "application/json" },
+              body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) throw new Error("Email failed");
+            msg.classList.remove("hidden");
+            msg.textContent = "Thanks! You’re on the waitlist. We’ll be in touch soon.";
+            $("waitlistForm").reset();
+          } catch (error) {
+            msg.classList.remove("hidden");
+            msg.textContent = "Could not submit. Please try again or check the waitlist endpoint.";
+          }
+        };
+
+        sendForm();
       });
 
       // Init
       updateCharCount();
       setPricingMode("monthly");
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.getVoices();
+        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+      }
     </script>
   </body>
 </html>

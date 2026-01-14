@@ -782,13 +782,64 @@
         }
       ];
 
+      const detectSimulatedLanguage = (value, fallback) => {
+        if (/[\\u0900-\\u097F]/.test(value)) return "hi";
+        if (/[\\u3040-\\u30FF]/.test(value)) return "ja";
+        if (/[\\u00C0-\\u024F]/.test(value)) return "es";
+        if (/[A-Za-z]/.test(value)) return "en";
+        return fallback;
+      };
+
+      const mockTranslateEnglishToSpanish = (value) => {
+        const lower = value.toLowerCase();
+        const phrases = [
+          { match: "no worries", out: "No te preocupes." },
+          { match: "no problem", out: "No hay problema." },
+          { match: "thank you", out: "Gracias." },
+          { match: "thanks", out: "Gracias." },
+          { match: "good morning", out: "Buenos dias." },
+          { match: "good night", out: "Buenas noches." },
+          { match: "see you soon", out: "Nos vemos pronto." }
+        ];
+
+        const phraseHit = phrases.find(p => lower.includes(p.match));
+        if (phraseHit) return phraseHit.out;
+
+        const replacements = [
+          [/\\bhello\\b/gi, "hola"],
+          [/\\bplease\\b/gi, "por favor"],
+          [/\\bexcuse me\\b/gi, "disculpe"],
+          [/\\bsorry\\b/gi, "lo siento"],
+          [/\\bi\\b/gi, "yo"],
+          [/\\bwe\\b/gi, "nosotros"],
+          [/\\byou\\b/gi, "tu"],
+          [/\\bneed\\b/gi, "necesito"],
+          [/\\bwant\\b/gi, "quiero"],
+          [/\\bcan\\b/gi, "puedo"],
+          [/\\bhelp\\b/gi, "ayuda"],
+          [/\\bfile\\b/gi, "archivo"],
+          [/\\bupdated\\b/gi, "actualizado"],
+          [/\\btonight\\b/gi, "esta noche"]
+        ];
+
+        let result = value;
+        replacements.forEach(([pattern, replacement]) => {
+          result = result.replace(pattern, replacement);
+        });
+
+        return result;
+      };
+
       const simulateTranslate = ({ from, to, text }) => {
         const clean = (text || "").trim();
         if (!clean) return null;
 
+        const detectedFrom = from === "auto" ? detectSimulatedLanguage(clean, from) : from;
+        const labelFrom = detectedFrom === "auto" ? from : detectedFrom;
+
         const lower = clean.toLowerCase();
         const match = knownPhrases.find(p =>
-          p.from === from &&
+          p.from === detectedFrom &&
           p.to === to &&
           p.textIncludes.some(snippet => lower.includes(snippet))
         );
@@ -801,9 +852,15 @@
           };
         }
 
+        let simulated = clean;
+        if (detectedFrom === "en" && to === "es") {
+          simulated = mockTranslateEnglishToSpanish(clean);
+        }
+
         // Generic simulation
         return {
-          out: `[Simulated ${langLabel[from]} → ${langLabel[to]}] ${clean}`,
+          out: `[Simulated ${langLabel[labelFrom] || "Auto"} → ${langLabel[to]}] ${simulated}`,
+          spoken: simulated,
           tone: "Simulated",
           nuance: "This demo is running without a translation API. Connect a real model later, the UI is ready."
         };
@@ -935,6 +992,7 @@
 
         return {
           out: reply[from] || replyEn,
+          spoken: reply[from] || replyEn,
           tone: tag,
           nuance: "Ear tries to keep your reply polite, natural, and aligned with the conversation’s tone."
         };
@@ -971,14 +1029,15 @@
 
         const playEarBtn = $("playEarBtn");
         const shouldPlayAudio = $("audioToggle").checked;
+        const spokenText = res.spoken || res.out;
         if (shouldPlayAudio) {
-          speakText(res.out, to);
+          speakText(spokenText, to);
           playEarBtn.classList.remove("hidden");
         } else {
           playEarBtn.classList.add("hidden");
         }
 
-        playEarBtn.onclick = () => speakText(res.out, to);
+        playEarBtn.onclick = () => speakText(spokenText, to);
       };
 
       const runReply = () => {
@@ -996,7 +1055,8 @@
 
         const playVoiceBtn = $("playVoiceBtn");
         playVoiceBtn.classList.remove("hidden");
-        playVoiceBtn.onclick = () => speakText(res.out, from);
+        const spokenText = res.spoken || res.out;
+        playVoiceBtn.onclick = () => speakText(spokenText, from);
       };
 
       $("translateBtn").addEventListener("click", () => runTranslate());
@@ -1034,10 +1094,12 @@
       // Speech-to-text (Chrome)
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       let recognizer = null;
+      let isRecording = false;
+      let micTranscript = "";
       if (SpeechRecognition) {
         recognizer = new SpeechRecognition();
-        recognizer.continuous = false;
-        recognizer.interimResults = false;
+        recognizer.continuous = true;
+        recognizer.interimResults = true;
       }
 
       $("micBtn").addEventListener("click", () => {
@@ -1048,27 +1110,51 @@
           return;
         }
 
+        if (isRecording) {
+          isRecording = false;
+          $("micBtn").textContent = "Speak with mic";
+          recognizer.stop();
+          return;
+        }
+
         const from = $("fromLang").value;
         recognizer.lang = from === "auto" ? navigator.language : (langCode[from] || from);
-        $("micBtn").textContent = "Listening...";
-        $("micBtn").disabled = true;
+        $("micBtn").textContent = "Stop recording";
+        micTranscript = "";
+        isRecording = true;
 
         recognizer.onresult = (event) => {
-          const transcript = event.results?.[0]?.[0]?.transcript || "";
-          $("speakerText").value = transcript;
+          let interim = "";
+          let hasFinal = false;
+          for (let i = event.resultIndex; i < event.results.length; i += 1) {
+            const result = event.results[i];
+            const text = result?.[0]?.transcript || "";
+            if (result.isFinal) {
+              micTranscript += `${text} `;
+              hasFinal = true;
+            } else {
+              interim += text;
+            }
+          }
+          $("speakerText").value = `${micTranscript}${interim}`.trim();
           updateCharCount();
-          runTranslate();
+          if (hasFinal) runTranslate();
         };
 
         recognizer.onerror = () => {
           $("toneTag").textContent = "Tone: error";
           $("nuanceNotes").textContent = "Could not access microphone. Check permissions.";
           $("nuanceStatus").textContent = "Microphone error";
+          isRecording = false;
+          $("micBtn").textContent = "Speak with mic";
         };
 
         recognizer.onend = () => {
+          if (isRecording) {
+            recognizer.start();
+            return;
+          }
           $("micBtn").textContent = "Speak with mic";
-          $("micBtn").disabled = false;
         };
 
         recognizer.start();

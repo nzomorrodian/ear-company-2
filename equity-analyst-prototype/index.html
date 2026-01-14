@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>XYZ Company - AI Fundamental Analyst</title>
+    <meta name="description" content="XYZ Company automates the first 70% of fundamental equity research with CEO-ready reports, models, and valuations." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-demo="blk">
+    <div class="ambient"></div>
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">SF</div>
+        <div>
+          <div class="brand-name">XYZ Company</div>
+          <div class="brand-tag">AI fundamental analyst</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="#report">Report</a>
+        <a href="#model">Model</a>
+        <a href="#export">Export</a>
+      </nav>
+      <button class="btn ghost" id="openExport">Export center</button>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="pill">Automate 70% of fundamental analysis</span>
+          <h1>CEO-ready equity research in minutes.</h1>
+          <p>
+            XYZ Company pulls data, analyzes the competitive landscape, builds financial models,
+            and delivers a boardroom-quality report with valuation outputs.
+          </p>
+          <form id="companyForm" class="company-form">
+            <input id="companyInput" type="text" list="companyList" placeholder="Enter a public company or ticker (e.g., AMZN, META)" />
+            <datalist id="companyList">
+              <option value="BLK">BlackRock</option>
+              <option value="SCHW">Charles Schwab</option>
+              <option value="AMZN">Amazon</option>
+              <option value="META">Meta</option>
+              <option value="NVDA">NVIDIA</option>
+              <option value="AAPL">Apple</option>
+              <option value="MSFT">Microsoft</option>
+            </datalist>
+            <button class="btn primary" type="submit">Run analysis</button>
+          </form>
+          <div class="status-line" id="analysisStatus">Ready</div>
+          <div class="status-line" id="dataStatus">Live data: not connected</div>
+          <div class="analysis-timeline" id="analysisTimeline">
+            <div class="timeline-step" data-step="connect">Connect data sources</div>
+            <div class="timeline-step" data-step="collect">Collect filings + metrics</div>
+            <div class="timeline-step" data-step="model">Build forecast + DCF</div>
+            <div class="timeline-step" data-step="synthesize">Synthesize report</div>
+          </div>
+          <div class="quick-picks">
+            <button class="chip" data-symbol="BLK">BlackRock</button>
+            <button class="chip" data-symbol="SCHW">Schwab</button>
+            <button class="chip" data-symbol="AMZN">Amazon</button>
+            <button class="chip" data-symbol="META">Meta</button>
+          </div>
+          <button class="btn ghost" id="runDemo" type="button" onclick="window.runBlkDemo && window.runBlkDemo()">Play BLK demo</button>
+          <div class="hero-stats">
+            <div>
+              <span class="stat-label">Coverage</span>
+              <span class="stat-value">9,800+ public firms</span>
+            </div>
+            <div>
+              <span class="stat-label">Output time</span>
+              <span class="stat-value">4-7 minutes</span>
+            </div>
+            <div>
+              <span class="stat-label">Model depth</span>
+              <span class="stat-value">DCF + comps + CBCV</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-panel">
+          <div class="panel-card">
+            <div class="panel-head">
+              <span>Live coverage</span>
+              <span class="chip">Verified sources</span>
+            </div>
+            <h3 id="companyName">NVIDIA Corporation (NVDA)</h3>
+            <p id="companySummary">
+              Design leader in accelerated computing and AI infrastructure. Dominant CUDA ecosystem,
+              growing data center revenue, and expanding software attach.
+            </p>
+            <div class="metric-grid">
+              <div>
+                <span class="metric-label">Market cap</span>
+                <strong id="marketCap">$2.45T</strong>
+              </div>
+              <div>
+                <span class="metric-label">Revenue (TTM)</span>
+                <strong id="revenue">$78.3B</strong>
+              </div>
+              <div>
+                <span class="metric-label">Gross margin</span>
+                <strong id="grossMargin">74%</strong>
+              </div>
+              <div>
+                <span class="metric-label">Implied upside</span>
+                <strong id="upside">+18%</strong>
+              </div>
+            </div>
+            <div class="signal-bar">
+              <div class="signal">
+                <span>Moat strength</span>
+                <div class="bar"><div class="bar-fill" id="moatBar"></div></div>
+              </div>
+              <div class="signal">
+                <span>Pricing power</span>
+                <div class="bar"><div class="bar-fill" id="pricingBar"></div></div>
+              </div>
+            </div>
+            <div class="sources" id="dataSources"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="report" class="report">
+        <div class="section-title">
+          <h2>Fundamental analyst report</h2>
+          <p>Structured to match how human analysts brief CIOs and CEOs.</p>
+        </div>
+        <div class="report-grid">
+          <article class="report-card">
+            <h3>Business model</h3>
+            <p id="businessModel"></p>
+          </article>
+          <article class="report-card">
+            <h3>Industry & TAM</h3>
+            <p id="industry"></p>
+            <ul class="list" id="tamList"></ul>
+          </article>
+          <article class="report-card">
+            <h3>Market share & positioning</h3>
+            <p id="marketShare"></p>
+            <ul class="list" id="majorPlayers"></ul>
+          </article>
+          <article class="report-card">
+            <h3>Competitive landscape</h3>
+            <p id="competition"></p>
+            <div class="pill-row" id="competitors"></div>
+          </article>
+          <article class="report-card">
+            <h3>Porter's 5 Forces</h3>
+            <div class="force-grid" id="forces"></div>
+          </article>
+          <article class="report-card">
+            <h3>Moat & differentiation</h3>
+            <p id="moat"></p>
+            <div class="tag-row" id="moatTags"></div>
+          </article>
+          <article class="report-card">
+            <h3>Moat sustainability</h3>
+            <p id="durability"></p>
+          </article>
+          <article class="report-card">
+            <h3>Disruption scenario</h3>
+            <p id="disruption"></p>
+          </article>
+          <article class="report-card">
+            <h3>Differentiation drivers</h3>
+            <ul class="list" id="differentiation"></ul>
+          </article>
+          <article class="report-card">
+            <h3>AI disruption playbook</h3>
+            <p id="aiDisruption"></p>
+            <p id="disruptionDifficulty"></p>
+          </article>
+          <article class="report-card">
+            <h3>Customer feedback online</h3>
+            <p id="sentiment"></p>
+            <div class="sentiment-cards" id="reviews"></div>
+          </article>
+          <article class="report-card">
+            <h3>Recent SEC filings</h3>
+            <div class="filings" id="filings"></div>
+          </article>
+        </div>
+      </section>
+
+      <section id="model" class="model">
+        <div class="section-title">
+          <h2>Financial model & valuation</h2>
+          <p>Auto-built from trusted data feeds with scenario controls.</p>
+        </div>
+        <div class="model-shell">
+          <div class="model-card">
+            <div class="model-head">
+              <h3>5-year forecast</h3>
+              <div class="toggle">
+                <button class="chip active" data-scenario="base">Base</button>
+                <button class="chip" data-scenario="bull">Bull</button>
+                <button class="chip" data-scenario="bear">Bear</button>
+              </div>
+            </div>
+            <div class="table" id="forecastTable"></div>
+          </div>
+          <div class="model-card">
+            <h3>Valuation summary</h3>
+            <div class="valuation-grid">
+              <div>
+                <span class="metric-label">DCF value</span>
+                <strong id="dcfValue">$2.89T</strong>
+              </div>
+              <div>
+                <span class="metric-label">Implied share price</span>
+                <strong id="sharePrice">$128.40</strong>
+              </div>
+              <div>
+                <span class="metric-label">EV / EBITDA vs peers</span>
+                <strong id="evEbitda">1.35x</strong>
+              </div>
+              <div>
+                <span class="metric-label">Customer-based value</span>
+                <strong id="cbcValue">$2.62T</strong>
+              </div>
+            </div>
+            <div class="valuation-inputs">
+              <div>
+                <span class="metric-label">DCF discount rate</span>
+                <strong id="dcfDiscount">9.0%</strong>
+              </div>
+              <div>
+                <span class="metric-label">Terminal growth</span>
+                <strong id="dcfTerminal">2.5%</strong>
+              </div>
+              <div>
+                <span class="metric-label">FCF growth (base)</span>
+                <strong id="dcfGrowth">8%</strong>
+              </div>
+            </div>
+            <div class="valuation-note" id="valuationNote"></div>
+          </div>
+          <div class="model-card">
+            <h3>Model drivers & assumptions</h3>
+            <ul class="list" id="modelDrivers"></ul>
+          </div>
+          <div class="model-card">
+            <h3>Multiples vs peers</h3>
+            <ul class="list" id="peerMultiples"></ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="export" class="export">
+        <div class="section-title">
+          <h2>Export-ready outputs</h2>
+          <p>Deliverables designed for board decks, investment memos, and internal models.</p>
+        </div>
+        <div class="export-grid">
+          <div class="export-card">
+            <h3>Excel model</h3>
+            <p>Full driver-based model with sensitivity tabs.</p>
+            <button class="btn primary" id="exportExcel">Download Excel (CSV)</button>
+          </div>
+          <div class="export-card">
+            <h3>Slide deck</h3>
+            <p>12-slide narrative with charts, comps, and thesis.</p>
+            <button class="btn primary" id="exportDeck">Download deck</button>
+          </div>
+          <div class="export-card">
+            <h3>2-page PDF brief</h3>
+            <p>Executive summary with valuation, risks, and thesis.</p>
+            <button class="btn primary" id="openPdf">Preview PDF</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div>
+        <strong>XYZ Company</strong>
+        <p>Automated equity research built for executive decision-makers.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#report">Report</a>
+        <a href="#model">Model</a>
+        <a href="#export">Export</a>
+      </div>
+    </footer>
+
+    <div class="modal" id="exportModal">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3>Export center</h3>
+          <button class="btn ghost small" id="closeExport">Close</button>
+        </div>
+        <div class="export-progress">
+          <div class="progress-row">
+            <span>Refreshing comps + multiples</span>
+            <span class="status" id="exportStatus1">Ready</span>
+          </div>
+          <div class="progress-row">
+            <span>Generating model workbook</span>
+            <span class="status" id="exportStatus2">Ready</span>
+          </div>
+          <div class="progress-row">
+            <span>Rendering board deck</span>
+            <span class="status" id="exportStatus3">Ready</span>
+          </div>
+          <div class="progress-row">
+            <span>Publishing PDF brief</span>
+            <span class="status" id="exportStatus4">Ready</span>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn primary" id="modalExcel">Download Excel</button>
+          <button class="btn ghost" id="modalDeck">Download Deck</button>
+          <button class="btn ghost" id="modalPdf">Open PDF</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="pdfModal">
+      <div class="modal-card wide">
+        <div class="modal-head">
+          <h3>2-page PDF preview</h3>
+          <button class="btn ghost small" id="closePdf">Close</button>
+        </div>
+        <div class="pdf-preview">
+          <div class="pdf-page" id="pdfPageOne"></div>
+          <div class="pdf-page" id="pdfPageTwo"></div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn primary" id="downloadPdf">Download PDF</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="https://unpkg.com/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <script src="app.js?v=2"></script>
+    <script>
+      window.addEventListener('load', () => {
+        const status = document.getElementById('analysisStatus');
+        const dataStatus = document.getElementById('dataStatus');
+        if (status) status.textContent = 'Loading demo...';
+        if (typeof window.runBlkDemo === 'function') {
+          window.runBlkDemo();
+          return;
+        }
+        if (status) status.textContent = 'Loading fallback demo...';
+        if (dataStatus) dataStatus.innerHTML = 'Live data: <strong>demo mode</strong>';
+
+        const setText = (id, value) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = value;
+        };
+
+        const setBar = (id, value) => {
+          const el = document.getElementById(id);
+          if (el) el.style.width = value;
+        };
+
+        setText('companyName', 'BlackRock, Inc. (BLK)');
+        setText('companySummary', 'Largest asset manager globally with scale in ETFs, institutional mandates, and the Aladdin analytics platform.');
+        setText('marketCap', '$120B');
+        setText('revenue', '$18.6B');
+        setText('grossMargin', '45%');
+        setText('upside', '+11%');
+        setBar('moatBar', '78%');
+        setBar('pricingBar', '70%');
+
+        setText('businessModel', 'Fee-based asset management across iShares ETFs, active strategies, and multi-asset solutions, plus technology revenue from Aladdin.');
+        setText('industry', 'Global asset management and wealth platforms with a secular shift to passive and model portfolios.');
+        setText('competition', 'Competition centers on Vanguard and State Street in passive, plus Fidelity and private managers in active and alternatives.');
+        setText('moat', 'Scale in iShares, institutional distribution, and Aladdin platform adoption create durable switching costs.');
+        setText('durability', 'Moat durability is solid for 3-5 years with sticky Aladdin contracts and diversified fee sources.');
+        setText('disruption', 'A disruptor would need ETF scale plus a replacement for Aladdin’s risk stack. Difficulty is high.');
+        setText('sentiment', 'Institutional clients value stability and breadth, while fee pressure remains a headwind.');
+
+        setText('dcfValue', '$130B');
+        setText('sharePrice', '$935.10');
+        setText('evEbitda', '0.92x');
+        setText('cbcValue', '$118B');
+        setText('valuationNote', 'Base case assumes stable fee rates with modest net inflows and continued Aladdin growth.');
+
+        if (status) status.textContent = 'Demo ready (fallback).';
+      });
+    </script>
+  </body>
+</html>

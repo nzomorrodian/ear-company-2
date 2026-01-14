@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HomePilot AI - A warm, guided way to sell your home</title>
+    <meta name="description" content="HomePilot AI is a warm, guided AI real estate agent that takes you from intake to close with a flat fee and real integrations." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="ambient"></div>
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">HP</div>
+        <div>
+          <div class="brand-name">HomePilot AI</div>
+          <div class="brand-tag">Warm, full-service seller guidance</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="#journey">Journey</a>
+        <a href="#prototype">Prototype</a>
+        <a href="#pricing">Pricing</a>
+      </nav>
+      <button class="btn primary" id="startNow">Start now</button>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="pill">Flat fee. Full-service AI agent. Human warmth.</span>
+          <h1>Sell your home with a gentle, step-by-step AI guide.</h1>
+          <p>
+            HomePilot AI takes you from the first conversation to closing day. Pricing, listing,
+            showings, offers, and paperwork are handled with real service integrations so you
+            feel supported, not overwhelmed.
+          </p>
+          <div class="hero-actions">
+            <button class="btn primary" id="heroStart">Start the guided flow</button>
+            <button class="btn ghost" id="heroTour">See the live prototype</button>
+          </div>
+          <div class="hero-stats">
+            <div>
+              <span class="stat-label">Typical savings</span>
+              <span class="stat-value">$18,000</span>
+            </div>
+            <div>
+              <span class="stat-label">Concierge support</span>
+              <span class="stat-value">24/7</span>
+            </div>
+            <div>
+              <span class="stat-label">Seller satisfaction</span>
+              <span class="stat-value">4.9/5</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-cards">
+          <div class="summary-card">
+            <div class="summary-top">
+              <span>Live seller plan</span>
+              <span class="status">In progress</span>
+            </div>
+            <h3 id="summaryTitle">The Oakridge launch plan</h3>
+            <div class="summary-grid">
+              <div>
+                <span class="summary-label">Goal</span>
+                <strong id="summaryGoal">Maximize price</strong>
+              </div>
+              <div>
+                <span class="summary-label">Timeline</span>
+                <strong id="summaryTimeline">List in 30 days</strong>
+              </div>
+              <div>
+                <span class="summary-label">Target range</span>
+                <strong id="summaryRange">$640k - $680k</strong>
+              </div>
+              <div>
+                <span class="summary-label">Next</span>
+                <strong id="summaryNext">Approve comps</strong>
+              </div>
+            </div>
+            <div class="progress">
+              <div class="progress-bar" id="summaryProgress"></div>
+            </div>
+          </div>
+
+          <div class="signal-card">
+            <h4>Neighborhood pulse</h4>
+            <div class="signal-row">
+              <span>Buyer demand</span>
+              <strong>High</strong>
+            </div>
+            <div class="signal-row">
+              <span>Average days on market</span>
+              <strong>18 days</strong>
+            </div>
+            <div class="signal-row">
+              <span>Top upgrade ROI</span>
+              <strong>Fresh paint + staging</strong>
+            </div>
+            <button class="btn ghost small">View local report</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="journey" class="journey">
+        <div class="section-title">
+          <h2>Every step handled with warmth</h2>
+          <p>You approve the decisions. The AI handles the busywork.</p>
+        </div>
+        <div class="journey-grid">
+          <div class="journey-card">
+            <h3>1. A real intake conversation</h3>
+            <p>We listen first: goals, timing, repair comfort, and your ideal outcome.</p>
+          </div>
+          <div class="journey-card">
+            <h3>2. Pricing with local comps</h3>
+            <p>We pull comps and market speed, then suggest a pricing strategy.</p>
+          </div>
+          <div class="journey-card">
+            <h3>3. Listing launch</h3>
+            <p>AI-written copy, photo shot list, and syndication to major portals.</p>
+          </div>
+          <div class="journey-card">
+            <h3>4. Showings managed</h3>
+            <p>Smart scheduling, feedback summaries, and showing analytics.</p>
+          </div>
+          <div class="journey-card">
+            <h3>5. Offers compared</h3>
+            <p>We summarize, rank, and draft counter offers with your approval.</p>
+          </div>
+          <div class="journey-card">
+            <h3>6. Closing guided</h3>
+            <p>Checklists, signatures, and timelines stay on track to close.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="prototype" class="prototype">
+        <div class="section-title">
+          <h2>Click-through prototype</h2>
+          <p>Try the guided workflow. Every step updates your live seller plan.</p>
+        </div>
+
+        <div class="prototype-shell">
+          <aside class="stepper">
+            <button class="step active" data-step="0">Intake</button>
+            <button class="step" data-step="1">Property</button>
+            <button class="step" data-step="2">Comps & pricing</button>
+            <button class="step" data-step="3">Listing</button>
+            <button class="step" data-step="4">Showings</button>
+            <button class="step" data-step="5">Offers</button>
+            <button class="step" data-step="6">Closing</button>
+          </aside>
+
+          <div class="prototype-body">
+            <div class="assistant">
+              <div class="assistant-head">
+                <h3>AI concierge</h3>
+                <span class="badge">Live</span>
+              </div>
+              <div class="assistant-thread" id="assistantThread">
+                <div class="bubble bot">Welcome! I will guide the entire sale. Start with your goals.</div>
+                <div class="bubble bot">I can also connect MLS + comps data when you are ready.</div>
+              </div>
+              <div class="assistant-input">
+                <input id="assistantInput" type="text" placeholder="Ask the concierge..." />
+                <button class="btn primary small" id="assistantSend">Send</button>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head">
+                <h3>Seller flow</h3>
+                <div class="panel-progress">
+                  <span id="panelStepLabel">Step 1 of 7</span>
+                  <div class="progress small">
+                    <div class="progress-bar" id="panelProgress"></div>
+                  </div>
+                </div>
+              </div>
+
+              <form id="sellerForm">
+                <section class="panel-step active" data-step="0">
+                  <h4>Start with your goals</h4>
+                  <div class="field">
+                    <label for="goal">Primary goal</label>
+                    <select id="goal" required>
+                      <option value="Maximize price">Maximize price</option>
+                      <option value="Sell fast">Sell fast</option>
+                      <option value="Balance speed and price">Balance speed and price</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="timeline">Ideal timeline</label>
+                    <input id="timeline" type="text" placeholder="List in 30 days" required />
+                  </div>
+                  <div class="field">
+                    <label for="support">Preferred support level</label>
+                    <select id="support">
+                      <option value="Light touch">Light touch guidance</option>
+                      <option value="White glove">White glove concierge</option>
+                      <option value="Hands-on">Hands-on with weekly check-ins</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label for="notes">Anything you want us to know?</label>
+                    <textarea id="notes" rows="4" placeholder="Repairs, upgrades, or special timing"></textarea>
+                  </div>
+                </section>
+
+                <section class="panel-step" data-step="1">
+                  <h4>Tell us about the home</h4>
+                  <div class="field-grid">
+                    <div class="field">
+                      <label for="address">Address</label>
+                      <input id="address" type="text" placeholder="123 Maple Ave" required />
+                    </div>
+                  <div class="field">
+                    <label for="city">City</label>
+                    <input id="city" type="text" placeholder="Austin" required />
+                  </div>
+                  <div class="field">
+                    <label for="state">State</label>
+                    <input id="state" type="text" placeholder="TX" maxlength="2" required />
+                  </div>
+                  <div class="field">
+                    <label for="zip">ZIP</label>
+                    <input id="zip" type="text" placeholder="78701" inputmode="numeric" />
+                  </div>
+                  <div class="field">
+                    <label for="beds">Bedrooms</label>
+                    <input id="beds" type="number" min="1" value="3" required />
+                  </div>
+                    <div class="field">
+                      <label for="baths">Bathrooms</label>
+                      <input id="baths" type="number" min="1" step="0.5" value="2.5" required />
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="condition">Condition</label>
+                    <select id="condition">
+                      <option value="Move-in ready">Move-in ready</option>
+                      <option value="Light updates">Light updates</option>
+                      <option value="Needs repairs">Needs repairs</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label>Standout upgrades</label>
+                    <div class="chip-group">
+                      <button type="button" class="chip" data-chip="Kitchen">Kitchen</button>
+                      <button type="button" class="chip" data-chip="Backyard">Backyard</button>
+                      <button type="button" class="chip" data-chip="Solar">Solar</button>
+                      <button type="button" class="chip" data-chip="Flooring">Flooring</button>
+                      <button type="button" class="chip" data-chip="Bathroom">Bathroom</button>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="panel-step" data-step="2">
+                  <h4>Comps and pricing</h4>
+                  <div class="pricing-callout">
+                    <div>
+                      <span class="label">Suggested list price</span>
+                      <strong id="listPrice">$660,000</strong>
+                    </div>
+                    <div>
+                      <span class="label">Estimated range</span>
+                      <strong id="priceRange">$640k - $680k</strong>
+                    </div>
+                    <div>
+                      <span class="label">Confidence</span>
+                      <div class="confidence">
+                        <div class="confidence-bar" id="confidenceBar"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <button type="button" class="btn primary" id="runComps">Run local comps</button>
+                  <div class="comps" id="compsList">
+                    <div class="comp-card">
+                      <div>
+                        <strong>118 Maple Ave</strong>
+                        <span>Sold 2 weeks ago</span>
+                      </div>
+                      <div>$655,000</div>
+                    </div>
+                    <div class="comp-card">
+                      <div>
+                        <strong>401 Oak St</strong>
+                        <span>Sold 1 month ago</span>
+                      </div>
+                      <div>$675,000</div>
+                    </div>
+                    <div class="comp-card">
+                      <div>
+                        <strong>74 Pine Ct</strong>
+                        <span>Sold 3 months ago</span>
+                      </div>
+                      <div>$642,000</div>
+                    </div>
+                  </div>
+                  <div class="note">Data integrations: MLS, ATTOM, Estated, ShowingTime.</div>
+                </section>
+
+                <section class="panel-step" data-step="3">
+                  <h4>Listing launch</h4>
+                  <div class="field">
+                    <label for="headline">Listing headline</label>
+                    <input id="headline" type="text" />
+                  </div>
+                  <div class="field">
+                    <label for="description">Listing description</label>
+                    <textarea id="description" rows="5"></textarea>
+                  </div>
+                  <div class="listing-preview">
+                    <div>
+                      <strong>Preview</strong>
+                      <p id="listingPreview"></p>
+                    </div>
+                    <button type="button" class="btn ghost" id="refreshCopy">Rewrite copy</button>
+                  </div>
+                </section>
+
+                <section class="panel-step" data-step="4">
+                  <h4>Showing plan</h4>
+                  <div class="field">
+                    <label for="showingWindow">Preferred showing window</label>
+                    <input id="showingWindow" type="text" value="Weekends 10am-4pm" />
+                  </div>
+                  <div class="field">
+                    <label>Lockbox preference</label>
+                    <select id="lockbox">
+                      <option value="Smart lockbox">Smart lockbox</option>
+                      <option value="Owner present">Owner present</option>
+                      <option value="Agent hosted">Agent hosted</option>
+                    </select>
+                  </div>
+                  <div class="calendar">
+                    <div class="calendar-day active">Sat</div>
+                    <div class="calendar-day active">Sun</div>
+                    <div class="calendar-day">Mon</div>
+                    <div class="calendar-day">Tue</div>
+                    <div class="calendar-day">Wed</div>
+                    <div class="calendar-day">Thu</div>
+                    <div class="calendar-day">Fri</div>
+                  </div>
+                </section>
+
+                <section class="panel-step" data-step="5">
+                  <h4>Offer comparison</h4>
+                  <div class="offer-card" data-offer="A">
+                    <div>
+                      <strong>Offer A</strong>
+                      <span>$670,000 · 20% down · 30-day close</span>
+                    </div>
+                    <button type="button" class="btn ghost small">Compare</button>
+                  </div>
+                  <div class="offer-card" data-offer="B">
+                    <div>
+                      <strong>Offer B</strong>
+                      <span>$655,000 · 10% down · 21-day close</span>
+                    </div>
+                    <button type="button" class="btn ghost small">Compare</button>
+                  </div>
+                  <div class="offer-card" data-offer="C">
+                    <div>
+                      <strong>Offer C</strong>
+                      <span>$662,000 · Cash · 14-day close</span>
+                    </div>
+                    <button type="button" class="btn ghost small">Compare</button>
+                  </div>
+                  <div class="offer-note" id="offerNote">AI tip: Offer A maximizes price, Offer C is fastest.</div>
+                </section>
+
+                <section class="panel-step" data-step="6">
+                  <h4>Closing checklist</h4>
+                  <ul class="checklist">
+                    <li>Open escrow and share timeline</li>
+                    <li>Schedule inspection</li>
+                    <li>Order appraisal</li>
+                    <li>Review disclosures</li>
+                    <li>Final walk-through</li>
+                  </ul>
+                  <div class="note">You will receive a daily status recap until closing day.</div>
+                </section>
+
+                <div class="panel-actions">
+                  <button type="button" class="btn ghost" id="prevBtn">Back</button>
+                  <button type="button" class="btn primary" id="nextBtn">Next step</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="pricing" class="pricing">
+        <div class="section-title">
+          <h2>Simple flat fee</h2>
+          <p>One price, full-service AI support, no commission.</p>
+        </div>
+        <div class="pricing-card">
+          <div>
+            <h3>HomePilot AI full service</h3>
+            <p>End-to-end guidance with real integrations and concierge support.</p>
+            <ul>
+              <li>Comps + pricing strategy</li>
+              <li>Listing creation + syndication</li>
+              <li>Showing + offer management</li>
+              <li>Closing checklist + escrow coordination</li>
+            </ul>
+          </div>
+          <div class="price">
+            <span>Flat fee</span>
+            <strong>$999</strong>
+            <button class="btn primary" id="pricingCta">Start selling</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div>
+        <strong>HomePilot AI</strong>
+        <p>Built for sellers who want transparency, calm, and control.</p>
+      </div>
+      <div class="footer-links">
+        <a href="#journey">Journey</a>
+        <a href="#prototype">Prototype</a>
+        <a href="#pricing">Pricing</a>
+      </div>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>

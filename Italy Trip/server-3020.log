@@ -1,0 +1,16 @@
+127.0.0.1 - - [15/Jan/2026 12:52:50] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [15/Jan/2026 12:52:50] "GET /styles.css HTTP/1.1" 200 -
+127.0.0.1 - - [15/Jan/2026 12:52:50] code 404, message File not found
+127.0.0.1 - - [15/Jan/2026 12:52:50] "GET /favicon.ico HTTP/1.1" 404 -
+127.0.0.1 - - [15/Jan/2026 12:52:52] "GET /timeline.html HTTP/1.1" 200 -
+127.0.0.1 - - [15/Jan/2026 12:52:53] "GET /gallery.html HTTP/1.1" 200 -
+127.0.0.1 - - [15/Jan/2026 12:52:54] "GET /map.html HTTP/1.1" 200 -
+127.0.0.1 - - [15/Jan/2026 12:53:03] "GET /styles.css HTTP/1.1" 304 -
+127.0.0.1 - - [15/Jan/2026 12:53:10] "GET /timeline.html HTTP/1.1" 304 -
+127.0.0.1 - - [15/Jan/2026 12:53:14] "GET /gallery.html HTTP/1.1" 304 -
+127.0.0.1 - - [15/Jan/2026 12:53:14] "GET /index.html HTTP/1.1" 304 -
+127.0.0.1 - - [15/Jan/2026 12:53:16] "GET /styles.css HTTP/1.1" 304 -
+127.0.0.1 - - [15/Jan/2026 12:53:26] "GET /map.html HTTP/1.1" 304 -
+127.0.0.1 - - [15/Jan/2026 12:53:32] "GET /gallery.html HTTP/1.1" 304 -
+127.0.0.1 - - [15/Jan/2026 12:53:32] "GET /styles.css HTTP/1.1" 304 -
+127.0.0.1 - - [15/Jan/2026 12:53:42] "GET /timeline.html HTTP/1.1" 304 -

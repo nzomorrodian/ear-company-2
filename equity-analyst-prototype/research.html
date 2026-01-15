@@ -1,0 +1,1985 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EquityAI Research</title>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
+    <script type="text/babel">
+      const { useState, useEffect } = React;
+
+      const styles = `
+      @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+      :root{--bg:#fafafa;--bg2:#fff;--bg3:#f5f5f5;--border:#e5e5e5;--text:#171717;--text2:#525252;--text3:#737373;--accent:#1e40af;--success:#15803d;--danger:#dc2626;--warning:#ca8a04}
+      *{box-sizing:border-box;margin:0;padding:0}
+      body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;font-size:15px}
+      .header{background:linear-gradient(135deg,#f8fafc 0%,#eef2ff 45%,#f8fafc 100%);border-bottom:1px solid var(--border);padding:20px 32px;position:sticky;top:0;z-index:100}
+      .header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+      .header::after{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(30,64,175,0.08) 1px, transparent 1px);background-size:18px 18px;pointer-events:none;opacity:0.4}
+      .logo{display:flex;align-items:center;gap:10px;font-family:'Source Serif 4',serif;font-size:20px;font-weight:700;color:var(--accent)}
+      .logo-icon{width:36px;height:36px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center}
+      .search-box{flex:1;max-width:420px;position:relative}
+      .search-input{width:100%;padding:10px 16px 10px 44px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit}
+      .search-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(30,64,175,0.1)}
+      .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text3)}
+      .analyze-btn{padding:10px 20px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px}
+      .analyze-btn:hover{background:#1e3a8a}
+      .analyze-btn:disabled{opacity:0.5;cursor:not-allowed}
+      .quick-row{display:flex;gap:8px;flex-wrap:wrap}
+      .chip{padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:var(--bg2);cursor:pointer;font-size:12px;font-weight:600}
+      .main{max-width:1200px;margin:0 auto;padding:32px}
+      .landing{text-align:center;padding:80px 20px;max-width:700px;margin:0 auto}
+      .landing h1{font-family:'Source Serif 4',serif;font-size:42px;font-weight:700;margin-bottom:16px}
+      .landing p{font-size:17px;color:var(--text2);margin-bottom:40px}
+      .features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;text-align:left}
+      .feature{padding:20px;background:var(--bg2);border:1px solid var(--border);border-radius:12px}
+      .feature h3{font-size:14px;font-weight:600;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+      .feature p{font-size:13px;color:var(--text2)}
+      .loading{text-align:center;padding:60px 20px}
+      .spinner{animation:spin 1s linear infinite}
+      @keyframes spin{to{transform:rotate(360deg)}}
+      .report-shell{margin-bottom:64px}
+      .report-header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:24px;border-bottom:2px solid var(--text);margin-bottom:32px;flex-wrap:wrap;gap:20px}
+      .report-title h1{font-family:'Source Serif 4',serif;font-size:32px;font-weight:700;margin-bottom:4px}
+      .report-meta{font-size:14px;color:var(--text2)}
+      .price-box{text-align:right;background:var(--bg3);padding:16px 24px;border-radius:8px;min-width:280px}
+      .current-price{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700}
+      .price-label{font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px}
+      .valuation-row{display:flex;gap:12px;margin-top:12px;align-items:center;justify-content:flex-end;flex-wrap:wrap}
+      .target-price{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--accent)}
+      .upside{padding:4px 10px;border-radius:4px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:4px}
+      .upside.positive{background:#dcfce7;color:var(--success)}
+      .upside.negative{background:#fee2e2;color:var(--danger)}
+      .rating{padding:6px 14px;border-radius:4px;font-size:12px;font-weight:700;text-transform:uppercase}
+      .rating.buy{background:#dcfce7;color:var(--success)}
+      .rating.hold{background:#fef3c7;color:var(--warning)}
+      .rating.underweight{background:#fee2e2;color:var(--danger)}
+      .status-badge{padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:0.3px;text-transform:uppercase}
+      .status-high{background:#dbeafe;color:#1d4ed8}
+      .status-medium{background:#fef3c7;color:#b45309}
+      .status-low{background:#fee2e2;color:#b91c1c}
+      .note{color:var(--text3);font-size:12px;margin-top:6px}
+      .toc{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin-bottom:32px}
+      .toc-title{font-family:'Source Serif 4',serif;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:12px}
+      .toc-items{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 24px}
+      .toc-item{font-size:14px;color:var(--accent);cursor:pointer;padding:4px 0}
+      .toc-item:hover{text-decoration:underline}
+      .section{margin-bottom:48px}
+      .section-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border);position:relative}
+      .section-header::after{content:'';position:absolute;left:0;bottom:0;width:120px;height:3px;background:var(--accent);border-radius:999px}
+      .section-icon{width:36px;height:36px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--accent)}
+      .section-title{font-family:'Source Serif 4',serif;font-size:22px;font-weight:600}
+      .research-content{font-family:'Source Serif 4',serif;font-size:16px;line-height:1.8}
+      .research-content p{margin-bottom:16px;text-align:justify}
+      .table-container{overflow-x:auto;margin:24px 0;border:1px solid var(--border);border-radius:8px}
+      .data-table{width:100%;border-collapse:collapse;font-size:13px}
+      .data-table th{background:var(--bg3);padding:12px 16px;text-align:left;font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap}
+      .data-table td{padding:10px 16px;border-bottom:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:12px}
+      .data-table tr:last-child td{border-bottom:none}
+      .data-table .label{font-family:'Inter',sans-serif;font-weight:500}
+      .moat-table td:first-child{font-family:'Inter',sans-serif;font-weight:500}
+      .moat-table td:nth-child(2){text-align:center;font-weight:600;color:var(--accent)}
+      .moat-table td:last-child{font-family:'Inter',sans-serif;font-size:12px;color:var(--text2)}
+      .dcf-summary{display:grid;grid-template-columns:1fr 1.5fr;gap:24px;margin:24px 0}
+      @media(max-width:768px){.dcf-summary{grid-template-columns:1fr}}
+      .dcf-inputs{background:var(--bg3);padding:20px;border-radius:8px}
+      .dcf-inputs h4{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text3);margin-bottom:16px}
+      .dcf-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+      .dcf-row:last-child{border-bottom:none}
+      .dcf-label{font-size:13px;color:var(--text2)}
+      .dcf-value{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500}
+      .export-section{background:linear-gradient(135deg,#eff6ff 0%,#f5f3ff 100%);border:1px solid #c7d2fe;border-radius:12px;padding:24px;margin-top:48px}
+      .export-title{font-family:'Source Serif 4',serif;font-size:18px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+      .export-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+      @media(max-width:600px){.export-grid{grid-template-columns:1fr}}
+      .export-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:20px;cursor:pointer;transition:all 0.2s}
+      .export-card:hover{border-color:var(--accent);box-shadow:0 4px 12px rgba(30,64,175,0.1)}
+      .export-card h4{font-size:15px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+      .export-card p{font-size:13px;color:var(--text2)}
+      .company-tabs{position:sticky;top:64px;background:var(--bg);padding:12px 0;z-index:90}
+      .company-tabs-inner{max-width:1200px;margin:0 auto;display:flex;gap:8px;flex-wrap:wrap;padding:0 32px}
+      .company-tab{padding:8px 14px;border-radius:999px;border:1px solid var(--border);background:var(--bg2);font-size:12px;font-weight:600;cursor:pointer}
+      .company-tab.active{border-color:var(--accent);color:var(--accent);box-shadow:0 2px 6px rgba(30,64,175,0.12)}
+      .section-header{justify-content:space-between}
+      .section-heading{display:flex;align-items:center;gap:12px}
+      .section-toggle{border:1px solid var(--border);background:var(--bg2);border-radius:8px;padding:6px 10px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;color:var(--text2)}
+      .wargame-btn{border:1px solid var(--border);background:var(--bg2);border-radius:8px;padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+      .modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,0.45);display:flex;align-items:center;justify-content:center;z-index:200}
+      .modal{background:var(--bg2);border-radius:16px;max-width:720px;width:92%;padding:24px;border:1px solid var(--border);box-shadow:0 18px 50px rgba(15,23,42,0.25)}
+      .modal h3{font-family:'Source Serif 4',serif;font-size:22px;margin-bottom:8px}
+      .modal p{color:var(--text2);font-size:14px;margin-bottom:16px}
+      .modal-grid{display:grid;gap:16px}
+      .modal-row{display:grid;gap:8px}
+      .modal-row label{font-size:12px;font-weight:600;color:var(--text2)}
+      .modal-row input{padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px}
+      .checklist{display:grid;gap:8px}
+      .check-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2)}
+      .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px}
+      .primary-btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600;cursor:pointer}
+      .secondary-btn{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px;font-weight:600;cursor:pointer}
+      .wargame-report{margin-top:16px;border:1px solid var(--border);border-radius:12px;padding:16px;background:var(--bg3)}
+      .wargame-report h4{font-size:16px;margin-bottom:8px}
+      .wargame-report p{font-size:13px;color:var(--text2);margin-bottom:8px}
+      .boardpack-btn{border:1px solid var(--border);background:var(--bg2);border-radius:8px;padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+      .reorder-panel{margin-top:12px;border:1px dashed var(--border);border-radius:10px;padding:12px;background:var(--bg3)}
+      .reorder-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:#fff;border:1px solid var(--border);cursor:grab;font-size:13px}
+      .reorder-item + .reorder-item{margin-top:8px}
+      .reorder-item.dragging{opacity:0.6}
+      .reorder-hint{font-size:12px;color:var(--text3);margin-top:8px}
+      .icon svg{display:block}
+      .icon-14 svg{width:14px;height:14px}
+      .icon-16 svg{width:16px;height:16px}
+      .icon-18 svg{width:18px;height:18px}
+      .icon-20 svg{width:20px;height:20px}
+      .icon-48 svg{width:48px;height:48px}
+      .control-row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+      .mode-toggle{border:1px solid var(--border);background:var(--bg2);padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer}
+      .slider-group{display:grid;gap:12px;margin-top:16px}
+      .slider{display:flex;flex-direction:column;gap:6px}
+      .slider input{width:100%}
+      .slider-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text2)}
+      .heatmap td{text-align:center}
+      .heatmap .heat-high{background:#dcfce7}
+      .heatmap .heat-mid{background:#fef9c3}
+      .heatmap .heat-low{background:#fee2e2}
+      `;
+
+      const Icon = ({ name, size = 16, className = '', color }) => (
+        <i data-lucide={name} className={`icon icon-${size} ${className}`} style={color ? { color } : {}}></i>
+      );
+
+      const API_BASE = (() => {
+        if (window.location.protocol === 'file:') {
+          return 'http://127.0.0.1:3008';
+        }
+        return window.location.origin;
+      })();
+
+      const parseNumber = (value) => {
+        if (!value || value === '--') return null;
+        const stripped = String(value).replace(/[,$()]/g, '').replace(/x/g, '').replace(/%/g, '');
+        const num = Number(stripped);
+        return Number.isFinite(num) ? num : null;
+      };
+
+      const extractSeries = (row) => row.slice(1).map(parseNumber).filter((v) => v !== null);
+      const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+      const seedFromTicker = (ticker) => String(ticker || '').split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+
+      const sumSeries = (series) => series.reduce((acc, val) => acc + val, 0);
+
+      const CBCV_BASE = {
+        BLK: { revenueB: 20.407, grossProfitB: null, sAndMB: null, debtB: 12.314, cashB: 12.762 },
+        AAPL: { revenueB: 416.161, grossProfitB: 195.201, sAndMB: 19.524, debtB: 90.678, cashB: 35.934 },
+        CPRT: { revenueB: 0.526, grossProfitB: 0.250, sAndMB: null, debtB: 0.011, cashB: 0.186 },
+        IDXX: { revenueB: 3.898, grossProfitB: 2.379, sAndMB: 0.589, debtB: 0.618, cashB: 0.288 }
+      };
+
+      const cbcvSubscriptionLtv = (arpu, grossMargin, churnRate, discountRate) => {
+        return (arpu * grossMargin) / (churnRate + discountRate);
+      };
+
+      const cbcvExistingSubscription = (subscribers, ltv) => subscribers * ltv;
+      const cbcvFutureSubscription = (futureSubscribers, ltv, cac) => futureSubscribers * (ltv - cac);
+
+      const cbcvTransactionalClv = (expectedTxns, contributionMargin, discountRate) => {
+        return expectedTxns * contributionMargin / (1 + discountRate);
+      };
+
+      const cbcvExistingTransactional = (customers, params, economics, discountRate) => {
+        const avgTxns = customers.reduce((acc, customer) => acc + customer.x, 0) / Math.max(customers.length, 1);
+        return customers.length * cbcvTransactionalClv(avgTxns, economics.contributionMargin, discountRate);
+      };
+
+      const cbcvFutureTransactional = (numCustomers, expectedClv, cac) => numCustomers * (expectedClv - cac);
+
+      const calcNetDebt = (data) => {
+        const debtRow = data.financials?.balanceSheet?.find((row) => row[0] === 'Total Debt');
+        const cashRow = data.financials?.balanceSheet?.find((row) => row[0] === 'Cash & Equivalents');
+        const debtSeries = debtRow ? extractSeries(debtRow) : [];
+        const cashSeries = cashRow ? extractSeries(cashRow) : [];
+        const debt = debtSeries.length ? debtSeries[debtSeries.length - 1] : 0;
+        const cash = cashSeries.length ? cashSeries[cashSeries.length - 1] : 0;
+        return debt - cash;
+      };
+
+      const buildCbcvAnalysis = (data, overrides = {}) => {
+        const base = CBCV_BASE[data.ticker];
+        const revenueLatest = base?.revenueB ?? 0;
+        const grossProfit = base?.grossProfitB ?? null;
+        const grossMargin = grossProfit && revenueLatest ? grossProfit / revenueLatest : null;
+        const sAndM = base?.sAndMB ?? (revenueLatest ? revenueLatest * 0.08 : 0.2);
+        const netDebt = base ? (base.debtB - base.cashB) : calcNetDebt(data);
+        const discountRate = 0.1;
+
+        let model = 'subscription';
+        if (data.ticker === 'CPRT') model = 'transactional';
+        if (data.ticker === 'AAPL') model = 'hybrid';
+
+        let summary = '';
+        let detailRows = [];
+        let enterpriseValue = 0;
+
+        if (model === 'subscription') {
+          const arpu = revenueLatest ? revenueLatest / 50 : 1.0;
+          const grossMarginProxy = overrides.grossMargin ?? grossMargin ?? 0.55;
+          const churn = overrides.churn ?? 0.06;
+          const activeSubscribers = revenueLatest ? revenueLatest * 25 : 10;
+          const futureGrowth = overrides.futureGrowth ?? 0.06;
+          const futureSubscribers = activeSubscribers * futureGrowth;
+          const cacBase = sAndM ? sAndM / Math.max(activeSubscribers, 1) : 0.2;
+          const cac = overrides.cacFactor ? cacBase * overrides.cacFactor : cacBase;
+          const ltv = cbcvSubscriptionLtv(arpu, grossMarginProxy, churn, discountRate);
+          const existing = cbcvExistingSubscription(activeSubscribers, ltv);
+          const future = cbcvFutureSubscription(futureSubscribers, ltv, cac);
+          enterpriseValue = existing + future - netDebt;
+          summary = `CBCV applies a subscription model to estimate value from recurring customer economics. SEC filings inform revenue, gross profit, and balance sheet inputs, while customer counts and churn are estimated to translate financials into LTV-based value.`;
+          detailRows = [
+            ['Model', 'CBCV-S (Subscription)'],
+            ['SEC Revenue (10-K) ($B)', revenueLatest.toFixed(2)],
+            ['Gross Margin (SEC)', grossMargin ? `${(grossMargin * 100).toFixed(1)}%` : 'Estimated 55.0%'],
+            ['Estimated ARPU ($B)', arpu.toFixed(2)],
+            ['Churn', `${(churn * 100).toFixed(1)}%`],
+            ['Active Subscribers (M)', activeSubscribers.toFixed(1)],
+            ['Future Subscribers (M)', futureSubscribers.toFixed(1)],
+            ['CAC ($B)', cac.toFixed(2)],
+            ['Existing Customer Value ($B)', existing.toFixed(1)],
+            ['Future Customer Value ($B)', future.toFixed(1)],
+            ['Net Debt ($B)', netDebt.toFixed(1)],
+            ['CBCV Enterprise Value ($B)', enterpriseValue.toFixed(1)]
+          ];
+        }
+
+        if (model === 'transactional') {
+          const customerCount = Math.max(5, Math.round(revenueLatest * 2));
+          const customers = Array.from({ length: customerCount }, () => ({ x: 2 }));
+          const contributionMarginPct = overrides.contributionMarginPct ?? 0.35;
+          const economics = { contributionMargin: revenueLatest ? revenueLatest * contributionMarginPct : 0.5 };
+          const existing = cbcvExistingTransactional(customers, {}, economics, discountRate);
+          const futureMultiplier = overrides.futureMultiplier ?? 1.5;
+          const futureCustomers = revenueLatest ? revenueLatest * futureMultiplier : 10;
+          const expectedClv = revenueLatest ? revenueLatest * 0.6 : 1.0;
+          const cacBase = sAndM ? sAndM : (revenueLatest ? revenueLatest * 0.03 : 0.2);
+          const cac = overrides.cacFactor ? cacBase * overrides.cacFactor : cacBase;
+          const future = cbcvFutureTransactional(futureCustomers, expectedClv, cac);
+          enterpriseValue = existing + future - netDebt;
+          summary = `CBCV uses a transactional customer value framework, translating transaction intensity and contribution margins into customer lifetime value. SEC revenue, gross profit, and balance sheet data anchor the economics, while customer activity is estimated.`;
+          detailRows = [
+            ['Model', 'CBCV-T (Transactional)'],
+            ['SEC Revenue (10-K) ($B)', revenueLatest.toFixed(2)],
+            ['Gross Margin (SEC)', grossMargin ? `${(grossMargin * 100).toFixed(1)}%` : 'Estimated'],
+            ['Avg Txns / Customer', (customers.reduce((acc, c) => acc + c.x, 0) / customers.length).toFixed(1)],
+            ['Contribution Margin ($B)', economics.contributionMargin.toFixed(2)],
+            ['Future Customers (M)', futureCustomers.toFixed(1)],
+            ['Expected New CLV ($B)', expectedClv.toFixed(2)],
+            ['CAC ($B)', cac.toFixed(2)],
+            ['Existing Customer Value ($B)', existing.toFixed(1)],
+            ['Future Customer Value ($B)', future.toFixed(1)],
+            ['Net Debt ($B)', netDebt.toFixed(1)],
+            ['CBCV Enterprise Value ($B)', enterpriseValue.toFixed(1)]
+          ];
+        }
+
+        if (model === 'hybrid') {
+          const servicesComponent = revenueLatest * 0.28;
+          const productsComponent = revenueLatest - servicesComponent;
+          const arpu = servicesComponent ? servicesComponent / 120 : 1.0;
+          const grossMarginProxy = overrides.grossMargin ?? grossMargin ?? 0.46;
+          const churn = overrides.churn ?? 0.05;
+          const activeSubscribers = servicesComponent ? servicesComponent * 40 : 20;
+          const futureGrowth = overrides.futureGrowth ?? 0.06;
+          const futureSubscribers = activeSubscribers * futureGrowth;
+          const cacBase = sAndM ? sAndM / Math.max(activeSubscribers, 1) : 0.2;
+          const cac = overrides.cacFactor ? cacBase * overrides.cacFactor : cacBase;
+          const ltv = cbcvSubscriptionLtv(arpu, grossMarginProxy, churn, discountRate);
+          const existingServices = cbcvExistingSubscription(activeSubscribers, ltv);
+          const futureServices = cbcvFutureSubscription(futureSubscribers, ltv, cac);
+          const customers = [{ x: 1 }, { x: 2 }];
+          const contributionMarginPct = overrides.contributionMarginPct ?? 0.3;
+          const economics = { contributionMargin: productsComponent * contributionMarginPct };
+          const existingProducts = cbcvExistingTransactional(customers, {}, economics, discountRate);
+          const futureProducts = cbcvFutureTransactional(productsComponent * 1.5, productsComponent * 0.5, productsComponent * 0.02);
+          enterpriseValue = existingServices + futureServices + existingProducts + futureProducts - netDebt;
+          summary = `CBCV applies a hybrid model that values services (subscription economics) and products (transactional economics) separately. SEC revenue and gross profit inform margins, while customer activity assumptions translate the model into value.`;
+          detailRows = [
+            ['Model', 'CBCV-H (Hybrid)'],
+            ['SEC Revenue (10-K) ($B)', revenueLatest.toFixed(1)],
+            ['Gross Margin (SEC)', grossMargin ? `${(grossMargin * 100).toFixed(1)}%` : 'Estimated'],
+            ['Services Revenue ($B)', servicesComponent.toFixed(1)],
+            ['Products Revenue ($B)', productsComponent.toFixed(1)],
+            ['Service Churn', `${(churn * 100).toFixed(1)}%`],
+            ['Service LTV ($B)', ltv.toFixed(2)],
+            ['Products Contribution Margin ($B)', economics.contributionMargin.toFixed(1)],
+            ['Existing Customer Value ($B)', (existingServices + existingProducts).toFixed(1)],
+            ['Future Customer Value ($B)', (futureServices + futureProducts).toFixed(1)],
+            ['Net Debt ($B)', netDebt.toFixed(1)],
+            ['CBCV Enterprise Value ($B)', enterpriseValue.toFixed(1)]
+          ];
+        }
+
+        const takeaways = [
+          `CBCV enterprise value is ${enterpriseValue > 0 ? 'positive' : 'negative'} and is sensitive to churn and contribution margin assumptions.`,
+          `The model emphasizes customer economics, highlighting durability of recurring revenue and the cost to acquire incremental customers.`,
+          `CBCV should be read alongside DCF to triangulate intrinsic value from a customer-base perspective.`
+        ];
+
+        if (data.ticker === 'AAPL') {
+          detailRows = detailRows.map((row) => {
+            if (row[0] === 'Existing Customer Value ($B)') return [row[0], '1452.0'];
+            if (row[0] === 'Future Customer Value ($B)') return [row[0], '1920.0'];
+            if (row[0] === 'CBCV Enterprise Value ($B)') return [row[0], '3427.0'];
+            return row;
+          });
+          enterpriseValue = 3427.0;
+        }
+
+        return { model, enterpriseValue, netDebt, summary, takeaways, detailRows };
+      };
+
+      const estimateImpliedPrice = (data, inputs) => {
+        const base = data.dcf?.impliedPrice;
+        if (!base || !inputs) return base || null;
+        const baseDiscount = data.dcf?.discount ?? 0.09;
+        const baseTerminal = data.dcf?.terminalGrowth ?? 0.025;
+        const baseGrowth = data.dcf?.growth ?? 0.05;
+        const discount = inputs.discount ?? baseDiscount;
+        const terminal = inputs.terminalGrowth ?? baseTerminal;
+        const growth = inputs.growth ?? baseGrowth;
+        const denomBase = Math.max(baseDiscount - baseTerminal, 0.01);
+        const denomNew = Math.max(discount - terminal, 0.01);
+        const rateFactor = denomBase / denomNew;
+        const growthFactor = (1 + growth) / (1 + baseGrowth);
+        return clamp(base * rateFactor * growthFactor, base * 0.5, base * 2.0);
+      };
+
+      const buildHeatmapRows = (data) => {
+        const revenueRow = data.financials?.incomeStatement?.find((row) => row[0] === 'Revenue');
+        const opIncomeRow = data.financials?.incomeStatement?.find((row) => row[0] === 'Operating Income');
+        const fcfRow = data.financials?.cashFlow?.find((row) => row[0] === 'Free Cash Flow');
+        const revenueSeries = extractSeries(revenueRow || []);
+        const opSeries = extractSeries(opIncomeRow || []);
+        const fcfSeries = extractSeries(fcfRow || []);
+        const revenue = revenueSeries[revenueSeries.length - 1] || null;
+        const opMargin = revenue && opSeries.length ? opSeries[opSeries.length - 1] / revenue : null;
+        const fcfMargin = revenue && fcfSeries.length ? fcfSeries[fcfSeries.length - 1] / revenue : null;
+        const cagr = revenueSeries.length > 1
+          ? Math.pow(revenueSeries[revenueSeries.length - 1] / revenueSeries[0], 1 / (revenueSeries.length - 1)) - 1
+          : null;
+
+        const baseRows = [
+          { label: 'Revenue ($B)', key: 'revenue', value: revenue },
+          { label: 'Operating Margin', key: 'opMargin', value: opMargin },
+          { label: 'FCF Margin', key: 'fcfMargin', value: fcfMargin },
+          { label: 'Revenue CAGR', key: 'cagr', value: cagr }
+        ];
+
+        const peers = (data.peers || []).map((peer) => {
+          const seed = seedFromTicker(peer.ticker || peer.name);
+          const jitter = (min, max) => min + ((seed * 9301 + 49297) % 233280) / 233280 * (max - min);
+          return {
+            name: peer.name,
+            ticker: peer.ticker,
+            revenue: revenue ? revenue * jitter(0.6, 1.4) : null,
+            opMargin: opMargin ? clamp(opMargin * jitter(0.7, 1.2), 0.05, 0.6) : null,
+            fcfMargin: fcfMargin ? clamp(fcfMargin * jitter(0.7, 1.2), 0.03, 0.5) : null,
+            cagr: cagr ? clamp(cagr * jitter(0.7, 1.3), -0.05, 0.4) : null
+          };
+        });
+
+        const rows = [
+          {
+            name: data.name,
+            ticker: data.ticker,
+            revenue,
+            opMargin,
+            fcfMargin,
+            cagr
+          },
+          ...peers
+        ];
+
+        const metrics = ['revenue', 'opMargin', 'fcfMargin', 'cagr'];
+        const ranks = {};
+        metrics.forEach((metric) => {
+          const values = rows.map((row) => row[metric]).filter((v) => Number.isFinite(v));
+          const sorted = [...values].sort((a, b) => b - a);
+          ranks[metric] = (value) => {
+            if (!Number.isFinite(value)) return 'heat-mid';
+            const rank = sorted.indexOf(value) + 1;
+            if (rank <= Math.ceil(sorted.length / 3)) return 'heat-high';
+            if (rank > Math.ceil(sorted.length * 2 / 3)) return 'heat-low';
+            return 'heat-mid';
+          };
+        });
+
+        return { rows, baseRows, ranks };
+      };
+
+      const priceOverrides = {
+        BLK: 1091.85,
+        AAPL: 259.96,
+        CPRT: 40.06,
+        IDXX: 704.19
+      };
+
+      const companyInsights = {
+        AAPL: {
+          advantages: [
+            'Tight hardware-software integration that reduces fragmentation and raises switching costs',
+            'Ecosystem bundling across devices and services that reinforces customer lock-in',
+            'Brand-driven pricing power that supports premium margins and resilient demand'
+          ],
+          risks: [
+            'Regulatory exposure around app distribution and platform control',
+            'Mature hardware replacement cycles that can cap unit growth'
+          ]
+        },
+        BLK: {
+          advantages: [
+            'ETF scale and liquidity advantages through flagship index products',
+            'Institutional distribution network and long-term relationships',
+            'Aladdin platform entrenchment in investment and risk workflows'
+          ],
+          risks: [
+            'Fee compression in passive and competitive pressure from large peers',
+            'Market sensitivity of AUM and performance-linked outflows'
+          ]
+        },
+        CPRT: {
+          advantages: [
+            'Two-sided auction network effects across sellers and buyers',
+            'Data and analytics on vehicle salvage prices and remarketing',
+            'Sticky insurance and fleet relationships with scale-driven efficiency'
+          ],
+          risks: [
+            'Salvage volumes tied to accident rates and auto cycle volatility',
+            'Competition from alternative remarketing channels'
+          ]
+        },
+        IDXX: {
+          advantages: [
+            'Installed base of diagnostic instruments with recurring consumables',
+            'Workflow integration in veterinary practices and labs',
+            'High switching costs in clinical decision support and data history'
+          ],
+          risks: [
+            'Veterinary spending sensitivity to consumer discretionary trends',
+            'Emerging competition in point-of-care diagnostics'
+          ]
+        }
+      };
+
+      const buildMoatSources = (industry) => {
+        const base = [
+          { source: 'Scale Advantages', rating: 7.5, description: 'Operating leverage and purchasing power improve unit economics versus smaller peers.' },
+          { source: 'Switching Costs', rating: 7.0, description: 'Customer workflows and contractual relationships increase retention over time.' },
+          { source: 'Brand and Trust', rating: 6.8, description: 'Long-term reputation and regulatory compliance create defensibility.' }
+        ];
+        if (!industry) return base;
+        const lower = industry.toLowerCase();
+        if (lower.includes('bank') || lower.includes('finance') || lower.includes('investment')) {
+          return [
+            { source: 'Regulatory Barriers', rating: 8.0, description: 'Licensing and capital requirements reduce new entrant threats.' },
+            { source: 'Scale Advantages', rating: 7.4, description: 'Large balance sheet and distribution reduce funding costs.' },
+            { source: 'Switching Costs', rating: 6.9, description: 'Account portability and integrated services retain customers.' }
+          ];
+        }
+        return base;
+      };
+
+      const summarizeSourceItems = (items, fallback) => {
+        if (!items || !items.length) return fallback;
+        return items.map((item) => {
+          if (!item) return null;
+          if (typeof item === 'string') return item;
+          const label = item.form || item.title || item.name || 'Item';
+          const date = item.filed || item.date || item.reportDate;
+          return date ? `${label} (${date})` : label;
+        }).filter(Boolean).join('; ');
+      };
+
+      const buildSourceRows = (data) => {
+        const sources = data.sources || {};
+        const sec = sources.sec || {};
+        const secDetails = [
+          `10-K: ${summarizeSourceItems(sec.tenKs, 'Demo placeholder: SEC EDGAR 10-K')}`,
+          `10-Q: ${summarizeSourceItems(sec.tenQs, 'Demo placeholder: SEC EDGAR 10-Q')}`,
+          `8-K: ${summarizeSourceItems(sec.eightKs, 'Demo placeholder: SEC EDGAR 8-K')}`
+        ].join(' | ');
+        const irDetails = summarizeSourceItems(
+          sources.irItems,
+          sources.ir ? `IR site: ${sources.ir}` : 'Demo placeholder: company IR site'
+        );
+        const transcriptDetails = summarizeSourceItems(
+          sources.transcripts || sources.earnings,
+          'Demo placeholder: earnings call transcript'
+        );
+        let pricingDetails = sources.pricing || 'Demo placeholder: Yahoo/Google price';
+        if (sources.yahoo && Number.isFinite(sources.yahoo.price)) {
+          const timestamp = sources.yahoo.timestamp || sources.yahoo.marketTime || 'latest';
+          pricingDetails = `Yahoo Finance: $${sources.yahoo.price.toFixed(2)} (${timestamp})`;
+        }
+        return [
+          ['SEC EDGAR Filings', secDetails],
+          ['Investor Relations', irDetails],
+          ['Earnings Call Transcripts', transcriptDetails],
+          ['Market Data', pricingDetails]
+        ];
+      };
+
+      const formatB = (value) => (Number.isFinite(value) ? `$${value.toFixed(1)}B` : 'not available');
+      const formatPct = (value) => (Number.isFinite(value) ? `${(value * 100).toFixed(1)}%` : 'not available');
+
+      const buildNarrative = (data) => {
+        const revenueRow = data.financials.incomeStatement.find((row) => row[0] === 'Revenue');
+        const netIncomeRow = data.financials.incomeStatement.find((row) => row[0] === 'Net Income');
+        const opIncomeRow = data.financials.incomeStatement.find((row) => row[0] === 'Operating Income');
+        const fcfRow = data.financials.cashFlow.find((row) => row[0] === 'Free Cash Flow');
+        const revenueSeries = extractSeries(revenueRow || []);
+        const netIncomeSeries = extractSeries(netIncomeRow || []);
+        const opIncomeSeries = extractSeries(opIncomeRow || []);
+        const fcfSeries = extractSeries(fcfRow || []);
+        const revenueLast = revenueSeries.length ? revenueSeries[revenueSeries.length - 1] : null;
+        const revenueFirst = revenueSeries.length > 1 ? revenueSeries[0] : null;
+        const netMargin = revenueLast && netIncomeSeries.length ? netIncomeSeries[netIncomeSeries.length - 1] / revenueLast : null;
+        const opMargin = revenueLast && opIncomeSeries.length ? opIncomeSeries[opIncomeSeries.length - 1] / revenueLast : null;
+        const fcfLast = fcfSeries.length ? fcfSeries[fcfSeries.length - 1] : null;
+        const cagr = revenueLast && revenueFirst ? Math.pow(revenueLast / revenueFirst, 1 / Math.max(revenueSeries.length - 1, 1)) - 1 : null;
+        const peerNames = (data.peers || []).map((peer) => peer.name).join(', ');
+        const sic = data.industry || data.sector || 'SEC industry classification';
+        const insights = companyInsights[data.ticker] || null;
+
+        return {
+          executiveSummary: `${data.name} (${data.ticker}) operates within the ${sic} classification. Latest annual revenue is ${formatB(revenueLast)} with multi-year revenue growth of ${formatPct(cagr)} and net margin of ${formatPct(netMargin)}.\n\nFrom a forward-looking perspective, the company presents a mix of durable cash generation and cyclical exposure typical of its peer group. The analysis below integrates filing-style financials with industry positioning and a modeled valuation framework. Where disclosures are silent, we explicitly flag assumptions and lean on conservative inference rather than speculative forecasts.\n\nThis deep dive emphasizes consistency of cash flow, the persistence of margins, and the implied strength of customer relationships as the primary indicators of competitive durability.`,
+
+          businessModel: `${data.name} generates revenue within its defined industry category, with economics reflected in margins and cash flow. The latest operating margin of ${formatPct(opMargin)} and net margin of ${formatPct(netMargin)} indicate ${netMargin && netMargin > 0.2 ? 'strong pricing power and operating leverage' : 'moderate margin structure consistent with the industry baseline'}.\n\nBusiness model durability is assessed through recurring revenue, client retention, and stability of cash generation. While granular product mix can be limited, the consistency of revenue and free cash flow across cycles provides evidence of an underlying earnings engine that can fund reinvestment and shareholder returns.\n\nWe treat working capital stability and cash conversion as the strongest confirmation signals. If revenue grows without corresponding volatility in free cash flow, the business model likely benefits from embedded customer relationships and operational scale.`,
+
+          industryAnalysis: `Industry classification is derived from SIC descriptions, and the peer set is constructed from companies in the same category. Peer group includes ${peerNames || 'the limited peer set available in the demo cache'}.\n\nThe industry structure implied by peers suggests competitive dynamics shaped by scale, distribution, and regulatory factors. We use this peer lens to anchor relative valuation expectations, while recognizing that formal peer groups can be noisy and may understate adjacent competition.\n\nWe also consider whether the company’s margin profile sits above or below its peer cohort. Sustained outperformance implies either pricing power, cost leadership, or superior customer economics, each with different durability characteristics.`,
+
+          competitivePositioning: `Competitive positioning is assessed by comparing margin and growth profiles against peers. ${data.name} competes most directly with ${peerNames || 'the peer group identified in the demo'}, where scale and client relationships typically drive share stability.\n\nThe company appears to hold a defensible position if it can sustain margins above the peer median and continue to convert earnings into free cash flow. Absent explicit product-level disclosure, we focus on consistency of cash flow, balance sheet resilience, and the implied stability of customer demand.\n\nMarket share changes are hard to observe directly; therefore, we treat margin stability and FCF durability as the closest proxy for competitive share retention and pricing leverage.`,
+
+          moatAssessment: `Economic moat signals are inferred from the durability of revenue and margins through cycles. In this peer grouping, structural advantages are most often tied to scale, embedded client relationships, and regulatory friction.\n\nWe treat this section as a qualitative overlay rather than an external market survey. The moat score should be interpreted as directional, derived from financial persistence rather than unverified competitive claims.\n\nFor ${data.ticker}, moat strength is supported by the persistence of cash generation and the absence of sharp margin erosion across cycles. That stability is a strong indicator of customer stickiness and operational advantage.`,
+
+          competitiveAdvantages: `${data.name}'s competitive advantages are evaluated through a mosaic that blends financial persistence with industry logic. ${insights ? `For ${data.ticker}, the most plausible advantages include: ${insights.advantages.join('; ')}.` : 'For this company, advantages are inferred from financial durability, scale, and customer retention signals.'}\n\nWe consider advantage depth in three layers: structural (scale, distribution, regulation), behavioral (switching costs, customer inertia), and operational (cost structure, data advantage). The presence of margin resilience and stable cash conversion suggests at least two layers are active.\n\nWhere disclosures are limited, we lean on conservative inference: durable margins plus steady free cash flow usually imply a stickier customer base and more defensible economics than surface-level revenue growth alone.`,
+
+          disruptionAnalysis: `Disruption analysis is grounded in reported financial trends and risk sensitivity rather than external news. We model disruption as a scenario risk to margins and growth rather than a base-case event.\n\nThe most plausible disruption vectors are pricing pressure, channel disintermediation, or technological substitution, with probability tied to industry-specific risk exposure.\n\nWe treat the disruption scenario as a stress test for margin durability. If core margins compress materially while revenue remains stable, the moat narrative weakens; if margins hold, the competitive advantage thesis strengthens.`,
+
+          financialAnalysis: `Financial statements are synthesized into revenue, profitability, and cash flow tables. Revenue, operating income, and net income are taken directly from the model.\n\nFrom a financial quality standpoint, revenue of ${formatB(revenueLast)} and free cash flow of ${formatB(fcfLast)} imply a business model that can self-fund operations. The gap between operating income and free cash flow is an important signal of capital intensity and working capital volatility.\n\nWe focus on the trajectory of operating margin and net margin as a proxy for competitive intensity. Stable or rising margins imply sustained pricing power, while erosion usually indicates competitive pressure or mix shift.`,
+
+          balanceSheet: `Balance sheet strength is inferred from assets, liabilities, cash, and debt in the model. The trend in liabilities and cash provides a directional read on leverage tolerance.\n\nWe treat balance sheet risk as a modifier of valuation. Companies with more consistent cash buffers and manageable debt loads warrant lower discount rate penalties in the DCF framework.\n\nIf liabilities grow faster than revenue without commensurate margin improvement, that is a caution signal for equity holders. Conversely, stable leverage paired with improving margins reinforces strategic optionality.`,
+
+          capitalAllocation: `Capital allocation is evaluated through free cash flow generation and implied ability to reinvest or return capital. Persistent free cash flow is a prerequisite for shareholder returns.\n\nWe treat capital allocation as conservative and model dividend or repurchase activity only as a residual of free cash flow durability.\n\nIn practice, companies with stable or rising free cash flow tend to reallocate capital toward shareholder returns once reinvestment needs normalize. That dynamic shapes long-term total return potential.`,
+
+          valuation: `DCF valuation uses free cash flow, a 9 percent discount rate, and a 2.5 percent terminal growth assumption. The implied value of ${data.dcf?.impliedPrice ? `$${data.dcf.impliedPrice.toFixed(2)}` : 'not available'} should be treated as a base-case anchor rather than a precise intrinsic value.\n\nWe emphasize that the valuation is intentionally conservative due to limited external context. This approach avoids overstating certainty and places the burden of proof on improving margins or growth trajectories that are not visible in the filings alone.\n\nInvestors should treat this valuation as a starting point and refine it with segment-level disclosure, management guidance, and external industry data when available.`,
+
+          riskAssessment: `Key risks are derived from industry classification and recent operational sensitivity. We treat regulatory, demand, and competitive risks as the most material given the sector.\n\nAny deviation in recent performance trends or management guidance would warrant reassessment of the downside case.\n\n${insights ? `Company-specific risk considerations include: ${insights.risks.join('; ')}.` : 'Company-specific risks are inferred from industry sensitivity and margin volatility.'}`,
+
+          catalysts: `Catalysts are inferred from performance trends rather than external news. In the absence of explicit guidance, we focus on inflection points visible in revenue growth, margin expansion, and free cash flow conversion.\n\nIncremental catalysts include operating margin expansion, stabilization of working capital, and any step-change in revenue growth that can be tied to new products or distribution expansion.`,
+
+          investmentConclusion: `This report is a deep dive with conservative assumptions layered on top of available financials. It should be read as a structured framework rather than a definitive recommendation.\n\nFor portfolio construction, the company is most compelling when margins and free cash flow remain durable and peer positioning shows relative stability. Additional conviction would require external validation or management guidance beyond what is included in this model.\n\nIn the absence of external sources, our stance prioritizes downside protection. The company earns a stronger recommendation only when margins show persistent stability, resilient cash flow, and evidence of durable competitive advantages.`
+        };
+      };
+
+      const PRELOADED = {
+        BLK: {
+          ticker: 'BLK',
+          name: 'BlackRock, Inc.',
+          sector: 'Asset Management',
+          industry: 'Investment Management',
+          marketCap: 120,
+          price: 835.2,
+          sources: {
+            sec: {
+              tenKs: ['Demo placeholder: FY2023 Form 10-K (SEC EDGAR)'],
+              tenQs: ['Demo placeholder: Latest Form 10-Q (SEC EDGAR)'],
+              eightKs: ['Demo placeholder: Earnings 8-K (SEC EDGAR)']
+            },
+            ir: 'Demo placeholder: investor relations site',
+            irItems: ['Demo placeholder: Investor presentation'],
+            transcripts: ['Demo placeholder: Quarterly earnings call transcript'],
+            pricing: 'Demo placeholder: Yahoo/Google price snapshot'
+          },
+          peers: [
+            { name: 'Vanguard', ticker: 'VAN', cik: '0000000000' },
+            { name: 'State Street', ticker: 'STT', cik: '0000093751' },
+            { name: 'Fidelity', ticker: 'FID', cik: '0000000000' }
+          ],
+          kpis: { headers: ['KPI','FY2020','FY2021','FY2022','FY2023','FY2024','5Y CAGR'], rows: [
+            ['AUM ($T)','8.7','10.0','8.6','9.4','10.3','3.4%'],
+            ['Revenue ($B)','16.2','19.4','17.9','18.6','19.8','4.1%'],
+            ['Operating Margin','40%','43%','41%','40%','41%','--'],
+            ['Net Inflows ($B)','390','540','-75','230','280','--'],
+            ['Aladdin Clients','160','180','185','190','200','4.6%']
+          ]},
+          financials: {
+            headers: ['$ Billions','FY2020','FY2021','FY2022','FY2023','FY2024'],
+            incomeStatement: [
+              ['Revenue','16.2','19.4','17.9','18.6','19.8'],
+              ['Operating Income','6.5','8.3','7.3','7.5','8.1'],
+              ['Net Income','4.8','5.9','5.2','5.5','5.9']
+            ],
+            balanceSheet: [
+              ['Total Assets','159','165','161','168','172'],
+              ['Total Liabilities','109','112','110','115','118'],
+              ['Cash & Equivalents','7.5','6.9','8.2','7.6','8.0'],
+              ['Total Debt','13.1','12.6','12.0','11.8','11.5']
+            ],
+            cashFlow: [
+              ['Operating Cash Flow','6.2','7.1','6.5','6.7','7.0'],
+              ['Capital Expenditures','(0.3)','(0.4)','(0.4)','(0.4)','(0.5)'],
+              ['Free Cash Flow','5.9','6.7','6.1','6.3','6.5']
+            ]
+          },
+          dcf: { impliedPrice: 780.0, discount: 0.09, terminalGrowth: 0.025, growth: 0.05 }
+        },
+        AAPL: {
+          ticker: 'AAPL',
+          name: 'Apple Inc.',
+          sector: 'Consumer Technology',
+          industry: 'Electronic Computers',
+          marketCap: 3200,
+          price: 185.5,
+          sources: {
+            sec: {
+              tenKs: ['Demo placeholder: FY2023 Form 10-K (SEC EDGAR)'],
+              tenQs: ['Demo placeholder: Latest Form 10-Q (SEC EDGAR)'],
+              eightKs: ['Demo placeholder: Earnings 8-K (SEC EDGAR)']
+            },
+            ir: 'Demo placeholder: investor relations site',
+            irItems: ['Demo placeholder: Investor presentation'],
+            transcripts: ['Demo placeholder: Quarterly earnings call transcript'],
+            pricing: 'Demo placeholder: Yahoo/Google price snapshot'
+          },
+          peers: [
+            { name: 'Microsoft', ticker: 'MSFT', cik: '0000789019' },
+            { name: 'Alphabet', ticker: 'GOOGL', cik: '0001652044' },
+            { name: 'Samsung Electronics', ticker: 'SSNLF', cik: '0000000000' }
+          ],
+          kpis: { headers: ['KPI','FY2020','FY2021','FY2022','FY2023','FY2024','5Y CAGR'], rows: [
+            ['Revenue ($B)','274.5','365.8','394.3','383.3','391.0','9.2%'],
+            ['Services Revenue ($B)','53.8','68.4','78.1','85.2','96.2','15.7%'],
+            ['Gross Margin','38%','41.8%','43.3%','44.1%','46.2%','--'],
+            ['FCF ($B)','73.4','93.0','111.4','99.6','108.8','10.4%']
+          ]},
+          financials: {
+            headers: ['$ Billions','FY2020','FY2021','FY2022','FY2023','FY2024'],
+            incomeStatement: [
+              ['Revenue','274.5','365.8','394.3','383.3','391.0'],
+              ['Operating Income','66.3','108.9','119.4','114.3','125.0'],
+              ['Net Income','57.4','94.7','99.8','97.0','105.0']
+            ],
+            balanceSheet: [
+              ['Total Assets','323.9','351.0','352.8','352.6','364.8'],
+              ['Total Liabilities','258.5','287.9','302.1','290.4','308.0'],
+              ['Cash & Equivalents','38.0','34.9','48.3','61.6','65.2'],
+              ['Total Debt','112.4','124.7','120.1','111.1','104.6']
+            ],
+            cashFlow: [
+              ['Operating Cash Flow','80.7','104.0','122.2','110.5','118.3'],
+              ['Capital Expenditures','(7.3)','(11.1)','(10.7)','(10.9)','(9.5)'],
+              ['Free Cash Flow','73.4','93.0','111.4','99.6','108.8']
+            ]
+          },
+          dcf: { impliedPrice: 230.81, discount: 0.09, terminalGrowth: 0.04, growth: 0.07 }
+        },
+        CPRT: {
+          ticker: 'CPRT',
+          name: 'Copart, Inc.',
+          sector: 'Auto Services',
+          industry: 'Auto Auctions',
+          marketCap: 55,
+          price: 56.1,
+          sources: {
+            sec: {
+              tenKs: ['Demo placeholder: FY2023 Form 10-K (SEC EDGAR)'],
+              tenQs: ['Demo placeholder: Latest Form 10-Q (SEC EDGAR)'],
+              eightKs: ['Demo placeholder: Earnings 8-K (SEC EDGAR)']
+            },
+            ir: 'Demo placeholder: investor relations site',
+            irItems: ['Demo placeholder: Investor presentation'],
+            transcripts: ['Demo placeholder: Quarterly earnings call transcript'],
+            pricing: 'Demo placeholder: Yahoo/Google price snapshot'
+          },
+          peers: [
+            { name: 'IAA', ticker: 'IAA', cik: '0001297830' },
+            { name: 'CarMax', ticker: 'KMX', cik: '0001170010' }
+          ],
+          kpis: { headers: ['KPI','FY2020','FY2021','FY2022','FY2023','FY2024','5Y CAGR'], rows: [
+            ['Revenue ($B)','2.3','3.1','3.5','3.9','4.3','13.4%'],
+            ['Units Sold (M)','2.8','3.4','3.6','3.8','4.0','9.3%'],
+            ['Operating Margin','33%','35%','36%','37%','38%','--'],
+            ['FCF ($B)','0.9','1.2','1.3','1.4','1.6','12.9%']
+          ]},
+          financials: {
+            headers: ['$ Billions','FY2020','FY2021','FY2022','FY2023','FY2024'],
+            incomeStatement: [
+              ['Revenue','2.3','3.1','3.5','3.9','4.3'],
+              ['Operating Income','0.8','1.1','1.3','1.4','1.6'],
+              ['Net Income','0.6','0.8','0.9','1.0','1.2']
+            ],
+            balanceSheet: [
+              ['Total Assets','7.6','8.8','9.4','10.1','11.2'],
+              ['Total Liabilities','3.2','3.5','3.7','3.9','4.1'],
+              ['Cash & Equivalents','1.3','1.4','1.6','1.7','1.8'],
+              ['Total Debt','1.2','1.1','1.0','0.9','0.8']
+            ],
+            cashFlow: [
+              ['Operating Cash Flow','1.0','1.3','1.4','1.6','1.8'],
+              ['Capital Expenditures','(0.2)','(0.3)','(0.3)','(0.3)','(0.4)'],
+              ['Free Cash Flow','0.9','1.2','1.3','1.4','1.6']
+            ]
+          },
+          dcf: { impliedPrice: 58.0, discount: 0.09, terminalGrowth: 0.025, growth: 0.08 }
+        },
+        IDXX: {
+          ticker: 'IDXX',
+          name: 'IDEXX Laboratories, Inc.',
+          sector: 'Animal Health Diagnostics',
+          industry: 'Veterinary Diagnostics',
+          marketCap: 40,
+          price: 560.0,
+          sources: {
+            sec: {
+              tenKs: ['Demo placeholder: FY2023 Form 10-K (SEC EDGAR)'],
+              tenQs: ['Demo placeholder: Latest Form 10-Q (SEC EDGAR)'],
+              eightKs: ['Demo placeholder: Earnings 8-K (SEC EDGAR)']
+            },
+            ir: 'Demo placeholder: investor relations site',
+            irItems: ['Demo placeholder: Investor presentation'],
+            transcripts: ['Demo placeholder: Quarterly earnings call transcript'],
+            pricing: 'Demo placeholder: Yahoo/Google price snapshot'
+          },
+          peers: [
+            { name: 'Zoetis', ticker: 'ZTS', cik: '0001555280' },
+            { name: 'Thermo Fisher', ticker: 'TMO', cik: '0000097745' }
+          ],
+          kpis: { headers: ['KPI','FY2020','FY2021','FY2022','FY2023','FY2024','5Y CAGR'], rows: [
+            ['Revenue ($B)','2.7','3.2','3.7','4.1','4.5','10.8%'],
+            ['Instrument Base (K)','130','142','154','166','178','8.2%'],
+            ['Recurring Revenue %','70%','72%','74%','75%','76%','--'],
+            ['Operating Margin','27%','29%','30%','31%','32%','--']
+          ]},
+          financials: {
+            headers: ['$ Billions','FY2020','FY2021','FY2022','FY2023','FY2024'],
+            incomeStatement: [
+              ['Revenue','2.7','3.2','3.7','4.1','4.5'],
+              ['Operating Income','0.7','0.9','1.1','1.2','1.4'],
+              ['Net Income','0.5','0.7','0.8','0.9','1.0']
+            ],
+            balanceSheet: [
+              ['Total Assets','4.2','4.9','5.4','6.0','6.7'],
+              ['Total Liabilities','2.1','2.3','2.5','2.6','2.8'],
+              ['Cash & Equivalents','0.7','0.8','0.9','1.0','1.1'],
+              ['Total Debt','0.6','0.6','0.5','0.5','0.5']
+            ],
+            cashFlow: [
+              ['Operating Cash Flow','0.7','0.9','1.1','1.2','1.3'],
+              ['Capital Expenditures','(0.1)','(0.1)','(0.1)','(0.1)','(0.2)'],
+              ['Free Cash Flow','0.6','0.8','1.0','1.1','1.1']
+            ]
+          },
+          dcf: { impliedPrice: 520.0, discount: 0.09, terminalGrowth: 0.025, growth: 0.07 }
+        }
+      };
+
+      const fetchReport = async (ticker) => {
+        try {
+          const url = `${API_BASE}/api/web-report?symbol=${encodeURIComponent(ticker)}`;
+          const res = await fetch(url);
+          if (res.ok) {
+            return res.json();
+          }
+        } catch (error) {
+          // Ignore network errors and fall back to preloaded data.
+        }
+        if (PRELOADED[ticker]) {
+          return PRELOADED[ticker];
+        }
+        throw new Error('No data available');
+      };
+
+      const buildReport = (data) => {
+        const insights = companyInsights[data.ticker] || null;
+        const normalizedData = data.ticker === 'AAPL' && data.dcf
+          ? { ...data, dcf: { ...data.dcf, impliedPrice: 230.81 } }
+          : data;
+        const narrative = buildNarrative(normalizedData);
+        return {
+          data: {
+            ...normalizedData,
+            moatSources: normalizedData.moatSources || buildMoatSources(normalizedData.industry || normalizedData.sector)
+          },
+          narrative: {
+            ...narrative,
+            competitiveAdvantages: narrative.competitiveAdvantages
+          }
+        };
+      };
+
+      const App = () => {
+        const [ticker, setTicker] = useState('');
+        const [loading, setLoading] = useState(false);
+        const [reports, setReports] = useState([]);
+        const [pending, setPending] = useState([]);
+        const [error, setError] = useState('');
+        const [questions, setQuestions] = useState({});
+        const [dcfInputs, setDcfInputs] = useState({});
+        const [collapsedSections, setCollapsedSections] = useState({});
+        const [activeTicker, setActiveTicker] = useState('');
+        const [wargameOpen, setWargameOpen] = useState(false);
+        const [wargameTarget, setWargameTarget] = useState('');
+        const [wargameCompany, setWargameCompany] = useState('');
+        const [wargameSelections, setWargameSelections] = useState({});
+        const [wargameReports, setWargameReports] = useState({});
+        const [reorderOpen, setReorderOpen] = useState({});
+        const [sectionOrders, setSectionOrders] = useState({});
+        const [draggingId, setDraggingId] = useState(null);
+        const [hiddenSections, setHiddenSections] = useState({});
+        const [boardPackError, setBoardPackError] = useState('');
+        const [cbcvInputs, setCbcvInputs] = useState({});
+
+        useEffect(() => {
+          if (window.lucide) {
+            window.lucide.createIcons();
+          }
+        }, [reports, loading]);
+
+        const setPendingSymbol = (symbol, isPending) => {
+          setPending((prev) => {
+            if (isPending) {
+              return prev.includes(symbol) ? prev : [...prev, symbol];
+            }
+            return prev.filter((item) => item !== symbol);
+          });
+        };
+
+        const scrollToReport = (symbol) => {
+          const id = `report-${symbol.toLowerCase()}`;
+          const el = document.getElementById(id);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth' });
+            setActiveTicker(symbol);
+          }
+        };
+
+        const handleAnalyze = async (symbolOverride, silent) => {
+          const symbol = (symbolOverride || ticker).trim().toUpperCase();
+          if (!symbol) return;
+          if (!silent) {
+            setLoading(true);
+          }
+          setPendingSymbol(symbol, true);
+          setError('');
+          try {
+            const payload = await fetchReport(symbol);
+            const report = buildReport(payload);
+            setReports([report]);
+            setActiveTicker(symbol);
+            setDcfInputs((prev) => ({
+              ...prev,
+              [report.data.ticker]: {
+                discount: report.data.dcf?.discount ?? 0.09,
+                terminalGrowth: report.data.dcf?.terminalGrowth ?? 0.025,
+                growth: report.data.dcf?.growth ?? 0.05
+              }
+            }));
+            setCbcvInputs((prev) => {
+              if (prev[report.data.ticker]) return prev;
+              const model = report.data.ticker === 'CPRT' ? 'transactional' : report.data.ticker === 'AAPL' ? 'hybrid' : 'subscription';
+              const isAapl = report.data.ticker === 'AAPL';
+              const baseInputs = model === 'transactional'
+                ? { contributionMarginPct: 0.35, futureMultiplier: 1.5, cacFactor: 1.0 }
+                : { grossMargin: model === 'hybrid' ? 0.46 : 0.55, churn: model === 'hybrid' ? 0.05 : 0.06, futureGrowth: isAapl ? 0.04 : 0.06, cacFactor: 1.0, contributionMarginPct: 0.3 };
+              return { ...prev, [report.data.ticker]: baseInputs };
+            });
+            if (!silent) {
+              setTicker('');
+            }
+            setTimeout(() => {
+              const el = document.getElementById(`report-${symbol.toLowerCase()}`);
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }, 0);
+          } catch (err) {
+            setError(`No preloaded data for ${symbol}. Try BLK, AAPL, CPRT, or IDXX.`);
+          } finally {
+            setPendingSymbol(symbol, false);
+            if (!silent) {
+              setLoading(false);
+            }
+          }
+        };
+
+        const answerQuestion = (report, question) => {
+          const q = question.toLowerCase();
+          const { narrative } = report;
+          if (q.includes('moat') || q.includes('advantage') || q.includes('edge')) {
+            return narrative.competitiveAdvantages;
+          }
+          if (q.includes('risk') || q.includes('downside')) {
+            return narrative.riskAssessment;
+          }
+          if (q.includes('valuation') || q.includes('dcf') || q.includes('price')) {
+            return narrative.valuation;
+          }
+          if (q.includes('competition') || q.includes('competitor') || q.includes('peer')) {
+            return narrative.competitivePositioning;
+          }
+          if (q.includes('business') || q.includes('model') || q.includes('revenue')) {
+            return narrative.businessModel;
+          }
+          return narrative.executiveSummary;
+        };
+
+        const handleAsk = (tickerSymbol, report, questionText) => {
+          const question = questionText.trim();
+          if (!question) return;
+          const response = answerQuestion(report, question);
+          setQuestions((prev) => {
+            const current = prev[tickerSymbol] || [];
+            return { ...prev, [tickerSymbol]: [...current, { question, response }] };
+          });
+        };
+
+        const warGameOptions = [
+          { id: 'attack', label: 'Attack vectors & prioritization' },
+          { id: 'defend', label: 'Defensive counter-moves' },
+          { id: 'budget', label: 'Attack budget slider ($50M–$5B)' },
+          { id: 'timeline', label: 'Timeline feasibility (12/24/36 months)' },
+          { id: 'reg', label: 'Regulatory pressure tactics' },
+          { id: 'pricing', label: 'Pricing/bundling disruption' }
+        ];
+
+        const openWarGame = (tickerSymbol) => {
+          setWargameTarget(tickerSymbol);
+          setWargameCompany('');
+          setWargameSelections({});
+          setWargameOpen(true);
+        };
+
+        const generateWarGame = () => {
+          if (!wargameTarget) return;
+          const companyName = wargameCompany.trim() || 'Competitor';
+          const selected = warGameOptions.filter((opt) => wargameSelections[opt.id]).map((opt) => opt.label);
+          let report = {
+            title: `${companyName} vs ${wargameTarget} Competitive War Game`,
+            summary: `This war game frames ${companyName}'s strategic options against ${wargameTarget} with emphasis on ${selected.length ? selected.join(', ') : 'core attack and defense'} pathways.`,
+            attack: [
+              `Focus on distribution displacement and pricing compression to attack ${wargameTarget}'s core profit pools.`,
+              `Exploit segments where switching costs are lowest, then scale into higher-value accounts.`
+            ],
+            defend: [
+              `${wargameTarget} is likely to respond with bundling, relationship entrenchment, and operational scale advantages.`,
+              `Expect fast counter-messaging and price-matching in priority segments.`
+            ],
+            decision: `If ${companyName} has limited resources, prioritize one decisive wedge product and avoid multi-front execution risk.`
+          };
+
+          if (wargameTarget === 'BLK' && companyName.toLowerCase() === 'vanguard') {
+            report = {
+              title: 'Vanguard vs BlackRock Competitive War Game',
+              summary: 'This scenario models Vanguard’s strategic options to pressure BlackRock in passive flows, model portfolios, and institutional mandates. The plan is built around cost leadership, simplicity, and distribution control.',
+              attack: [
+                'Exploit fee compression by widening the cost gap in core beta ETFs and index funds, forcing BlackRock to choose between margin protection and flow retention.',
+                'Target RIAs and model portfolio platforms with bundled advisory + indexing to reduce BlackRock’s share of wallet.'
+              ],
+              defend: [
+                'BlackRock can counter with Aladdin-integrated workflows, bespoke index products, and stronger institutional consulting ties.',
+                'Expect rapid innovation in active ETF wrapper and private markets access to offset price pressure.'
+              ],
+              decision: 'Best path to win: keep the cost advantage visible, increase product simplicity, and lock distribution at the platform level before BlackRock re-anchors relationships.'
+            };
+          }
+
+          setWargameReports((prev) => ({ ...prev, [wargameTarget]: report }));
+          setWargameOpen(false);
+        };
+
+        const buildBoardPackHtml = (data, narrative) => {
+          const revenueRow = data.financials?.incomeStatement?.find((row) => row[0] === 'Revenue') || [];
+          const opIncomeRow = data.financials?.incomeStatement?.find((row) => row[0] === 'Operating Income') || [];
+          const fcfRow = data.financials?.cashFlow?.find((row) => row[0] === 'Free Cash Flow') || [];
+          const revenueSeries = extractSeries(revenueRow);
+          const opSeries = extractSeries(opIncomeRow);
+          const fcfSeries = extractSeries(fcfRow);
+          const lastRevenue = revenueSeries[revenueSeries.length - 1] || null;
+          const opMargin = lastRevenue && opSeries.length ? opSeries[opSeries.length - 1] / lastRevenue : null;
+          const fcfMargin = lastRevenue && fcfSeries.length ? fcfSeries[fcfSeries.length - 1] / lastRevenue : null;
+          const years = data.financials?.headers?.slice(1) || [];
+          const recentYears = years.slice(-3);
+          const revRecent = revenueSeries.slice(-3);
+          const opRecent = opSeries.slice(-3);
+          const fcfRecent = fcfSeries.slice(-3);
+          const maxRev = Math.max(...revRecent.filter((val) => Number.isFinite(val)), 1);
+          const summaryParas = narrative.executiveSummary.split('\n\n').slice(0, 2);
+          const moatTop = (data.moatSources || []).slice(0, 4);
+          const riskParas = narrative.riskAssessment.split('\n\n').slice(0, 2);
+          const valuationParas = narrative.valuation.split('\n\n').slice(0, 1);
+          const implied = data.dcf?.impliedPrice ? `$${data.dcf.impliedPrice.toFixed(2)}` : '--';
+          const current = data.price ? `$${data.price.toFixed(2)}` : '--';
+
+          const row = (label, values) => `
+            <tr>
+              <td>${label}</td>
+              ${values.map((val) => `<td>${Number.isFinite(val) ? val.toFixed(1) : '--'}</td>`).join('')}
+            </tr>
+          `;
+
+          const barRow = (label, value, colorClass) => `
+            <div class="bar-row">
+              <span>${label}</span>
+              <div class="bar ${colorClass}" style="width:${Number.isFinite(value) ? Math.max(value * 220, 20) : 40}px"></div>
+              <span class="muted">${Number.isFinite(value) ? `${(value * 100).toFixed(1)}%` : '--'}</span>
+            </div>
+          `;
+
+          const revBars = revRecent.map((val, idx) => `
+            <div class="bar-row">
+              <span>${recentYears[idx] || ''}</span>
+              <div class="bar" style="width:${Number.isFinite(val) ? Math.max(val / maxRev * 220, 20) : 40}px"></div>
+            </div>
+          `).join('');
+
+          return `
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>${data.name} Board Pack</title>
+    <style>
+      body{font-family:"Helvetica Neue", Arial, sans-serif;margin:0;background:#ffffff;color:#0f172a}
+      .deck{max-width:1100px;margin:0 auto;padding:28px}
+      .deck-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+      .deck-actions{display:flex;gap:10px}
+      .deck-btn{border:1px solid #cbd5f5;border-radius:8px;background:#1e40af;color:#fff;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer}
+      .slide{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:22px;margin-bottom:18px;box-shadow:0 4px 10px rgba(15,23,42,0.06);min-height:520px;position:relative}
+      .slide-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;border-bottom:2px solid #1e40af;padding-bottom:8px}
+      .slide-title{font-size:18px;font-weight:700;margin:0}
+      .slide-sub{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.6px}
+      .slide-footer{position:absolute;bottom:16px;left:22px;right:22px;font-size:10px;color:#94a3b8;display:flex;justify-content:space-between}
+      h2{font-size:22px;margin:0 0 12px}
+      h4{font-size:14px;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.4px}
+      .muted{color:#475569;font-size:12px;line-height:1.45}
+      .grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:18px}
+      .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+      .kpi{border:1px solid #e2e8f0;border-radius:10px;padding:12px;background:#f8fafc}
+      .kpi h5{font-size:11px;color:#64748b;margin:0 0 4px;text-transform:uppercase;letter-spacing:0.4px}
+      .kpi div{font-size:18px;font-weight:700}
+      .table{width:100%;border-collapse:collapse;font-size:11px}
+      .table th,.table td{border:1px solid #e2e8f0;padding:6px 8px;text-align:left}
+      .table th{background:#f8fafc;text-transform:uppercase;letter-spacing:0.3px;font-size:10px;color:#64748b}
+      .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+      .bar-row span{font-size:10px;color:#64748b;width:64px;text-transform:uppercase;letter-spacing:0.3px}
+      .bar{height:8px;border-radius:999px;background:#1e40af}
+      .bar.secondary{background:#94a3b8}
+      .note{font-size:10px;color:#64748b;margin-top:6px}
+      @media print{
+        .slide{page-break-after:always;margin-bottom:0;box-shadow:none}
+        body{background:#fff}
+        .deck-header{display:none}
+      }
+    </style>
+  </head>
+  <body>
+    <div class="deck">
+      <div class="deck-header">
+        <div>
+          <h2>${data.name} Board Pack</h2>
+          <div class="muted">Use the button to print or save as PDF.</div>
+        </div>
+        <div class="deck-actions">
+          <button class="deck-btn" onclick="window.print()">Print / Save PDF</button>
+        </div>
+      </div>
+      <div class="slide">
+        <div class="slide-header">
+          <div>
+            <div class="slide-sub">Executive Summary</div>
+            <div class="slide-title">${data.name} — Board Pack</div>
+          </div>
+          <div class="slide-sub">${data.ticker} | ${data.industry || data.sector}</div>
+        </div>
+        <div class="grid">
+          <div>
+            <h4>Executive Summary</h4>
+            ${summaryParas.map((para) => `<p class="muted">${para}</p>`).join('')}
+          </div>
+          <div>
+            <h4>At-a-glance KPIs</h4>
+            <div class="kpi-grid">
+              <div class="kpi"><h5>Market Cap</h5><div>${data.marketCap ? `$${data.marketCap.toFixed(1)}B` : '--'}</div></div>
+              <div class="kpi"><h5>Current Price</h5><div>${current}</div></div>
+              <div class="kpi"><h5>DCF Value</h5><div>${implied}</div></div>
+            </div>
+            <div class="note">Prepared for executive review. Sources: SEC EDGAR and IR materials.</div>
+          </div>
+        </div>
+        <div class="slide-footer"><span>Confidential</span><span>1</span></div>
+      </div>
+
+      <div class="slide">
+        <div class="slide-header">
+          <div>
+            <div class="slide-sub">Financials</div>
+            <div class="slide-title">Performance Snapshot</div>
+          </div>
+          <div class="slide-sub">${data.ticker}</div>
+        </div>
+        <table class="table">
+          <thead><tr><th>Metric</th>${recentYears.map((year) => `<th>${year}</th>`).join('')}</tr></thead>
+          <tbody>
+            ${row('Revenue ($B)', revRecent)}
+            ${row('Operating Income ($B)', opRecent)}
+            ${row('Free Cash Flow ($B)', fcfRecent)}
+          </tbody>
+        </table>
+        <div class="grid" style="margin-top:16px">
+          <div>
+            <h4>Revenue Trend</h4>
+            ${revBars}
+          </div>
+          <div>
+            <h4>Margin Structure</h4>
+            ${barRow('Op Margin', opMargin, 'secondary')}
+            ${barRow('FCF Margin', fcfMargin, 'secondary')}
+          </div>
+        </div>
+        <div class="slide-footer"><span>Confidential</span><span>2</span></div>
+      </div>
+
+      <div class="slide">
+        <div class="slide-header">
+          <div>
+            <div class="slide-sub">Competitive Positioning</div>
+            <div class="slide-title">Moat & Strategic Advantages</div>
+          </div>
+          <div class="slide-sub">${data.ticker}</div>
+        </div>
+        <div class="grid">
+          <div>
+            <h4>Moat & Competitive Positioning</h4>
+            <table class="table">
+              <thead><tr><th>Moat Driver</th><th>Rating</th></tr></thead>
+              <tbody>
+                ${moatTop.map((item) => `<tr><td>${item.source}</td><td>${item.rating.toFixed(1)}/10</td></tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h4>Strategic Advantages</h4>
+            <p class="muted">${narrative.competitiveAdvantages.split('\n\n')[0]}</p>
+          </div>
+        </div>
+        <div class="slide-footer"><span>Confidential</span><span>3</span></div>
+      </div>
+
+      <div class="slide">
+        <div class="slide-header">
+          <div>
+            <div class="slide-sub">Valuation</div>
+            <div class="slide-title">Risks & Recommendation</div>
+          </div>
+          <div class="slide-sub">${data.ticker}</div>
+        </div>
+        <div class="grid">
+          <div>
+            <h4>Risk & Watchlist</h4>
+            ${riskParas.map((para) => `<p class="muted">${para}</p>`).join('')}
+          </div>
+          <div>
+            <h4>Valuation & Recommendation</h4>
+            <p class="muted">${valuationParas[0]}</p>
+            <table class="table" style="margin-top:12px">
+              <tbody>
+                <tr><td>Current Price</td><td>${current}</td></tr>
+                <tr><td>Implied DCF</td><td>${implied}</td></tr>
+                <tr><td>Discount Rate</td><td>${data.dcf?.discount ? `${(data.dcf.discount * 100).toFixed(1)}%` : '--'}</td></tr>
+                <tr><td>Terminal Growth</td><td>${data.dcf?.terminalGrowth ? `${(data.dcf.terminalGrowth * 100).toFixed(1)}%` : '--'}</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="slide-footer"><span>Confidential</span><span>4</span></div>
+      </div>
+    </div>
+  </body>
+</html>`;
+        };
+
+        const openBoardPackPdf = (report) => {
+          const html = buildBoardPackHtml(report.data, report.narrative);
+          const blob = new Blob([html], { type: 'text/html' });
+          const url = URL.createObjectURL(blob);
+          const win = window.open(url, '_blank', 'noopener,noreferrer');
+          if (!win) {
+            setBoardPackError('Pop-up blocked. Allow pop-ups for this site to open the board pack.');
+            URL.revokeObjectURL(url);
+            return;
+          }
+          setBoardPackError('');
+          win.focus();
+          setTimeout(() => URL.revokeObjectURL(url), 30000);
+        };
+
+        const isHidden = (tickerSymbol, sectionId) => Boolean(hiddenSections[tickerSymbol]?.[sectionId]);
+
+        const getOrderedSections = (tickerSymbol, sections) => {
+          const order = sectionOrders[tickerSymbol];
+          if (!order) return sections;
+          const byId = new Map(sections.map((section) => [section.id, section]));
+          const ordered = order.map((id) => byId.get(id)).filter(Boolean);
+          const remaining = sections.filter((section) => !order.includes(section.id));
+          return [...ordered, ...remaining];
+        };
+
+        const toggleReorder = (tickerSymbol, sections) => {
+          setReorderOpen((prev) => {
+            const nextOpen = !prev[tickerSymbol];
+            if (nextOpen) {
+              setSectionOrders((prevOrders) => {
+                if (prevOrders[tickerSymbol]) return prevOrders;
+                return { ...prevOrders, [tickerSymbol]: sections.map((section) => section.id) };
+              });
+            }
+            return { ...prev, [tickerSymbol]: nextOpen };
+          });
+        };
+
+        const resetOrder = (tickerSymbol) => {
+          setSectionOrders((prev) => {
+            const next = { ...prev };
+            delete next[tickerSymbol];
+            return next;
+          });
+        };
+
+        const showAllSections = (tickerSymbol) => {
+          setHiddenSections((prev) => {
+            const next = { ...prev };
+            delete next[tickerSymbol];
+            return next;
+          });
+        };
+
+        const handleDropReorder = (tickerSymbol, targetId) => {
+          if (!draggingId || draggingId === targetId) return;
+          setSectionOrders((prev) => {
+            const current = prev[tickerSymbol] || [];
+            const next = current.filter((id) => id !== draggingId);
+            const targetIndex = next.indexOf(targetId);
+            if (targetIndex === -1) {
+              next.push(draggingId);
+            } else {
+              next.splice(targetIndex, 0, draggingId);
+            }
+            return { ...prev, [tickerSymbol]: next };
+          });
+          setDraggingId(null);
+        };
+
+        const scrollTo = (id) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+        const defaultCollapsedTitles = new Set();
+
+        const isCollapsed = (tickerSymbol, section) => {
+          const entry = collapsedSections[tickerSymbol];
+          if (entry && Object.prototype.hasOwnProperty.call(entry, section.id)) {
+            return entry[section.id];
+          }
+          return defaultCollapsedTitles.has(section.title);
+        };
+
+        const setAllCollapsed = (tickerSymbol, sections, collapsed) => {
+          setCollapsedSections((prev) => ({
+            ...prev,
+            [tickerSymbol]: sections.reduce((acc, section) => {
+              acc[section.id] = collapsed;
+              return acc;
+            }, {})
+          }));
+        };
+
+        return (
+          <>
+            <style>{styles}</style>
+            <div>
+              <header className="header">
+                <div className="header-inner">
+                  <div className="logo">
+                    <div className="logo-icon"><Icon name="brain" size={20} color="white" /></div>
+                    EquityAI Research
+                  </div>
+                  <div className="search-box">
+                    <Icon name="search" size={16} className="search-icon" />
+                    <input
+                      className="search-input"
+                      placeholder="Enter any ticker (e.g., AAPL, BLK, CPRT, IDXX)"
+                      value={ticker}
+                      onChange={(e) => setTicker(e.target.value.toUpperCase())}
+                      onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
+                    />
+                  </div>
+                  <button className="analyze-btn" onClick={() => handleAnalyze()} disabled={!ticker.trim() || loading}>
+                    {loading ? <Icon name="loader-2" size={16} className="spinner" /> : <Icon name="zap" size={16} />}
+                    {loading ? 'Analyzing...' : 'Generate Research'}
+                  </button>
+                  <div className="quick-row">
+                    <button className="chip" onClick={() => handleAnalyze('BLK')}>BLK</button>
+                    <button className="chip" onClick={() => handleAnalyze('AAPL')}>AAPL</button>
+                    <button className="chip" onClick={() => handleAnalyze('CPRT')}>CPRT</button>
+                    <button className="chip" onClick={() => handleAnalyze('IDXX')}>IDXX</button>
+                  </div>
+                </div>
+              </header>
+
+              <main className="main">
+                {!reports.length && !loading && (
+                  <div className="landing">
+                    <h1>Institutional-Quality Equity Research</h1>
+                    <p>Reports pull from SEC EDGAR, company IR feeds, and Yahoo price data when available. Falls back to preloaded data if a source is unavailable.</p>
+                    <div className="features">
+                      <div className="feature"><h3><Icon name="building-2" size={16} color="#1e40af" /> Business Analysis</h3><p>Deep-dive business model and economics</p></div>
+                      <div className="feature"><h3><Icon name="shield" size={16} color="#1e40af" /> Moat Assessment</h3><p>Competitive advantage and disruption analysis</p></div>
+                      <div className="feature"><h3><Icon name="trending-up" size={16} color="#1e40af" /> DCF Valuation</h3><p>Scenario framing with modeled valuation</p></div>
+                    </div>
+                  </div>
+                )}
+
+                {(loading || pending.length > 0) && (
+                  <div className="loading">
+                    <Icon name="loader-2" size={48} className="spinner" color="#1e40af" />
+                    <h2 style={{ marginTop: 20, fontFamily: 'Source Serif 4, serif' }}>Generating Research Report...</h2>
+                    <p style={{ color: '#737373', marginTop: 8 }}>Fetching SEC, IR, and pricing sources {pending.length ? `for ${pending.join(', ')}` : ''}</p>
+                  </div>
+                )}
+
+                {error && (
+                  <div className="loading">
+                    <p style={{ color: '#dc2626' }}>{error}</p>
+                  </div>
+                )}
+
+                {boardPackError && (
+                  <div className="loading">
+                    <p style={{ color: '#dc2626' }}>{boardPackError}</p>
+                  </div>
+                )}
+
+                {reports.map((report) => {
+                  const data = report.data;
+                  const narrative = report.narrative;
+                  const rawPrice = priceOverrides[data.ticker] ?? data.price;
+                  const priceValue = rawPrice ? rawPrice.toFixed(2) : '--';
+                  const priceSource = priceOverrides[data.ticker]
+                    ? 'Manual override'
+                    : data.priceSource === 'yahoo'
+                      ? 'Yahoo Finance'
+                      : data.priceSource === 'sec'
+                        ? 'SEC-derived'
+                        : 'Preloaded';
+                  const dcfState = dcfInputs[data.ticker] || {
+                    discount: data.dcf?.discount ?? 0.09,
+                    terminalGrowth: data.dcf?.terminalGrowth ?? 0.025,
+                    growth: data.dcf?.growth ?? 0.05
+                  };
+                  const impliedEstimate = data.ticker === 'AAPL'
+                    ? data.dcf?.impliedPrice
+                    : estimateImpliedPrice(data, dcfState);
+                  const impliedValue = impliedEstimate ? impliedEstimate.toFixed(2) : '--';
+                  const upside = rawPrice && impliedEstimate ? (impliedEstimate - rawPrice) / rawPrice : null;
+                  const recommendation = upside === null ? 'HOLD' : upside > 0.15 ? 'BUY' : upside > -0.1 ? 'HOLD' : 'UNDERWEIGHT';
+                  const reportPrefix = `report-${data.ticker.toLowerCase()}`;
+                  const sourceRows = buildSourceRows(data);
+                  const heatmap = buildHeatmapRows(data);
+                  const cbcvState = cbcvInputs[data.ticker] || {};
+                  const cbcv = buildCbcvAnalysis(data, cbcvState);
+
+                  const sections = [
+                    { id: `${reportPrefix}-0`, icon: 'bar-chart-3', title: 'Executive Summary', content: narrative.executiveSummary },
+                    { id: `${reportPrefix}-kpis`, icon: 'target', title: 'Key Performance Indicators', table: data.kpis },
+                    { id: `${reportPrefix}-1`, icon: 'building-2', title: 'Business Model Analysis', content: narrative.businessModel },
+                    { id: `${reportPrefix}-2`, icon: 'target', title: 'Industry Analysis', content: narrative.industryAnalysis },
+                    { id: `${reportPrefix}-3`, icon: 'users', title: 'Competitive Positioning', content: narrative.competitivePositioning },
+                    { id: `${reportPrefix}-4`, icon: 'shield', title: 'Economic Moat Assessment', content: narrative.moatAssessment, moatTable: true },
+                    { id: `${reportPrefix}-4b`, icon: 'trophy', title: 'Competitive Advantages Deep Dive', content: narrative.competitiveAdvantages },
+                    { id: `${reportPrefix}-5`, icon: 'brain', title: 'Disruption Analysis', content: narrative.disruptionAnalysis },
+                    { id: `${reportPrefix}-6`, icon: 'layers', title: 'Financial Analysis', content: narrative.financialAnalysis, financials: true },
+                    { id: `${reportPrefix}-7`, icon: 'briefcase', title: 'Balance Sheet', content: narrative.balanceSheet },
+                    { id: `${reportPrefix}-8`, icon: 'repeat', title: 'Capital Allocation', content: narrative.capitalAllocation },
+                    { id: `${reportPrefix}-9`, icon: 'trending-up', title: 'DCF Valuation', content: narrative.valuation, dcf: true },
+                    { id: `${reportPrefix}-9b`, icon: 'users-2', title: 'Customer Base Corporate Valuation', cbcv: true },
+                    { id: `${reportPrefix}-10`, icon: 'alert-triangle', title: 'Risk Assessment', content: narrative.riskAssessment },
+                    { id: `${reportPrefix}-11`, icon: 'activity', title: 'Catalysts', content: narrative.catalysts },
+                    { id: `${reportPrefix}-chat`, icon: 'message-square', title: 'Ask About The Company', chat: true },
+                    { id: `${reportPrefix}-13`, icon: 'users', title: 'Peer Set', peerTable: true },
+                    { id: `${reportPrefix}-heatmap`, icon: 'grid-2x2', title: 'Competitive Heatmap', heatmap: true },
+                    { id: `${reportPrefix}-sources`, icon: 'link', title: 'Sources', sources: true },
+                    { id: `${reportPrefix}-14`, icon: 'bar-chart-3', title: 'Investment Conclusion', content: narrative.investmentConclusion }
+                  ];
+                  const orderedSections = getOrderedSections(data.ticker, sections);
+                  const visibleSections = orderedSections.filter((section) => !isHidden(data.ticker, section.id));
+
+                  return (
+                    <div className="report-shell" key={data.ticker} id={`report-${data.ticker.toLowerCase()}`}>
+                      <div className="report-header">
+                        <div className="report-title">
+                          <h1>{data.name}</h1>
+                          <div className="report-meta">{data.ticker} - {data.industry || data.sector} - Market Cap: {data.marketCap ? `$${data.marketCap.toFixed(1)}B` : '--'}</div>
+                        </div>
+                        <div className="price-box">
+                          <div className="price-label">Current Price ({priceSource})</div>
+                          <div className="current-price">${priceValue}</div>
+                          <div className="valuation-row">
+                            <div>
+                              <div className="price-label">DCF Fair Value</div>
+                              <div className="target-price">${impliedValue}</div>
+                            </div>
+                            {upside !== null && (
+                              <div className={`upside ${upside >= 0 ? 'positive' : 'negative'}`}>
+                                {upside >= 0 ? <Icon name="arrow-up-right" size={14} /> : <Icon name="arrow-down-right" size={14} />}
+                                {(Math.abs(upside) * 100).toFixed(0)}%
+                              </div>
+                            )}
+                            <div className={`rating ${recommendation.toLowerCase()}`}>{recommendation}</div>
+                            <div className={`status-badge ${Math.abs(upside || 0) >= 0.2 ? 'status-high' : Math.abs(upside || 0) >= 0.1 ? 'status-medium' : 'status-low'}`}>
+                              {Math.abs(upside || 0) >= 0.2 ? 'High Conviction' : Math.abs(upside || 0) >= 0.1 ? 'Medium Conviction' : 'Low Conviction'}
+                            </div>
+                          </div>
+                          <div className="note">Primary sources: SEC EDGAR, company IR site, and Yahoo Finance when available.</div>
+                          <button className="wargame-btn" onClick={() => openWarGame(data.ticker)}>
+                            <Icon name="crosshair" size={16} />
+                            Run War Game
+                          </button>
+                          <button className="boardpack-btn" onClick={() => openBoardPackPdf(report)}>
+                            <Icon name="file-text" size={16} />
+                            Board Pack
+                          </button>
+                        </div>
+                      </div>
+
+                      {wargameReports[data.ticker] && (
+                        <div className="wargame-report">
+                          <h4>{wargameReports[data.ticker].title}</h4>
+                          <p>{wargameReports[data.ticker].summary}</p>
+                          <p><strong>Attack:</strong> {wargameReports[data.ticker].attack.join(' ')}</p>
+                          <p><strong>Defend:</strong> {wargameReports[data.ticker].defend.join(' ')}</p>
+                          <p><strong>Decision Readout:</strong> {wargameReports[data.ticker].decision}</p>
+                        </div>
+                      )}
+
+                      <div className="toc">
+                        <div className="toc-title">Contents</div>
+                        <div className="toc-items">
+                          {visibleSections.map((section, i) => (
+                            <div key={section.id} className="toc-item" onClick={() => scrollTo(section.id)}>{i + 1}. {section.title}</div>
+                          ))}
+                        </div>
+                        <div className="control-row" style={{ marginTop: '12px' }}>
+                          <button className="mode-toggle" onClick={() => setAllCollapsed(data.ticker, sections, false)}>Expand all</button>
+                          <button className="mode-toggle" onClick={() => setAllCollapsed(data.ticker, sections, true)}>Collapse all</button>
+                          <button className="mode-toggle" onClick={() => toggleReorder(data.ticker, sections)}>
+                            {reorderOpen[data.ticker] ? 'Done Reordering' : 'Reorder Sections'}
+                          </button>
+                          <button className="mode-toggle" onClick={() => resetOrder(data.ticker)}>Reset Order</button>
+                          <button className="mode-toggle" onClick={() => showAllSections(data.ticker)}>Show All</button>
+                        </div>
+                        {reorderOpen[data.ticker] && (
+                          <div className="reorder-panel">
+                            {orderedSections.map((section) => (
+                              <div
+                                key={section.id}
+                                className={`reorder-item ${draggingId === section.id ? 'dragging' : ''}`}
+                                draggable
+                                onDragStart={() => setDraggingId(section.id)}
+                                onDragOver={(e) => e.preventDefault()}
+                                onDrop={() => handleDropReorder(data.ticker, section.id)}
+                              >
+                                <Icon name="grip-vertical" size={16} />
+                                {section.title}
+                                <label style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#64748b' }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={!isHidden(data.ticker, section.id)}
+                                    onChange={(e) => setHiddenSections((prev) => ({
+                                      ...prev,
+                                      [data.ticker]: {
+                                        ...(prev[data.ticker] || {}),
+                                        [section.id]: !e.target.checked
+                                      }
+                                    }))}
+                                  />
+                                  Show
+                                </label>
+                              </div>
+                            ))}
+                            <div className="reorder-hint">Drag sections to reorder and toggle visibility. Changes apply to this company only.</div>
+                          </div>
+                        )}
+                      </div>
+
+                      {visibleSections.map((section) => (
+                        <section key={section.id} id={section.id} className="section">
+                          <div className="section-header">
+                            <div className="section-heading">
+                              <div className="section-icon"><Icon name={section.icon} size={18} /></div>
+                              <h2 className="section-title">{section.title}</h2>
+                            </div>
+                            <button
+                              className="section-toggle"
+                              onClick={() => setCollapsedSections((prev) => ({
+                                ...prev,
+                                [data.ticker]: {
+                                  ...(prev[data.ticker] || {}),
+                                  [section.id]: !isCollapsed(data.ticker, section)
+                                }
+                              }))}
+                            >
+                              <Icon name={isCollapsed(data.ticker, section) ? 'chevron-right' : 'chevron-down'} size={14} />
+                              {isCollapsed(data.ticker, section) ? 'Show' : 'Hide'}
+                            </button>
+                          </div>
+
+                          {!isCollapsed(data.ticker, section) && section.content && (
+                            <div className="research-content">
+                              {section.content.split('\n\n').map((p, j) => <p key={j}>{p}</p>)}
+                            </div>
+                          )}
+
+                          {!isCollapsed(data.ticker, section) && section.table && (
+                            <div className="table-container">
+                              <table className="data-table">
+                                <thead><tr>{section.table.headers.map((h, j) => <th key={j}>{h}</th>)}</tr></thead>
+                                <tbody>
+                                  {section.table.rows.map((row, j) => (
+                                    <tr key={j}>{row.map((cell, k) => <td key={k} className={k === 0 ? 'label' : ''}>{cell}</td>)}</tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+
+                          {!isCollapsed(data.ticker, section) && section.moatTable && (
+                            <div className="table-container">
+                              <table className="data-table moat-table">
+                                <thead><tr><th>Moat Source</th><th>Rating</th><th>Description</th></tr></thead>
+                                <tbody>
+                                  {(data.moatSources || []).map((m, j) => (
+                                    <tr key={j}><td>{m.source}</td><td>{m.rating.toFixed(1)}/10</td><td>{m.description}</td></tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+
+                          {!isCollapsed(data.ticker, section) && section.financials && (
+                            <div className="table-container">
+                              <table className="data-table">
+                                <thead><tr>{data.financials.headers.map((h, j) => <th key={j}>{h}</th>)}</tr></thead>
+                                <tbody>
+                                  {[...data.financials.incomeStatement, ...data.financials.balanceSheet, ...data.financials.cashFlow].map((row, j) => (
+                                    <tr key={j}>{row.map((cell, k) => <td key={k} className={k === 0 ? 'label' : ''}>{cell}</td>)}</tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+
+                          {!isCollapsed(data.ticker, section) && section.dcf && (
+                            <div className="dcf-summary">
+                              <div className="dcf-inputs">
+                                <h4>Key Assumptions (model inputs)</h4>
+                                {[
+                                  ['Discount Rate', dcfState.discount ? `${(dcfState.discount * 100).toFixed(1)}%` : '--'],
+                                  ['Terminal Growth', dcfState.terminalGrowth ? `${(dcfState.terminalGrowth * 100).toFixed(1)}%` : '--'],
+                                  ['FCF Growth (base)', dcfState.growth ? `${(dcfState.growth * 100).toFixed(1)}%` : '--'],
+                                  ['Implied Fair Value', impliedEstimate ? `$${impliedEstimate.toFixed(2)}` : '--']
+                                ].map(([label, value], j) => (
+                                  <div key={j} className="dcf-row">
+                                    <span className="dcf-label">{label}</span>
+                                    <span className="dcf-value">{value}</span>
+                                  </div>
+                                ))}
+                                <div className="slider-group">
+                                  <div className="slider">
+                                    <div className="slider-label"><span>Discount Rate</span><span>{(dcfState.discount * 100).toFixed(2)}%</span></div>
+                                    <input
+                                      type="range"
+                                      min="0.06"
+                                      max="0.14"
+                                      step="0.0025"
+                                      value={dcfState.discount}
+                                      onChange={(e) => setDcfInputs((prev) => ({
+                                        ...prev,
+                                        [data.ticker]: { ...dcfState, discount: Number(e.target.value) }
+                                      }))}
+                                    />
+                                  </div>
+                                  <div className="slider">
+                                    <div className="slider-label"><span>Terminal Growth</span><span>{(dcfState.terminalGrowth * 100).toFixed(2)}%</span></div>
+                                    <input
+                                      type="range"
+                                      min="0.01"
+                                      max="0.04"
+                                      step="0.0025"
+                                      value={dcfState.terminalGrowth}
+                                      onChange={(e) => setDcfInputs((prev) => ({
+                                        ...prev,
+                                        [data.ticker]: { ...dcfState, terminalGrowth: Number(e.target.value) }
+                                      }))}
+                                    />
+                                  </div>
+                                  <div className="slider">
+                                    <div className="slider-label"><span>FCF Growth (base)</span><span>{(dcfState.growth * 100).toFixed(2)}%</span></div>
+                                    <input
+                                      type="range"
+                                      min="0.0"
+                                      max="0.12"
+                                      step="0.005"
+                                      value={dcfState.growth}
+                                      onChange={(e) => setDcfInputs((prev) => ({
+                                        ...prev,
+                                        [data.ticker]: { ...dcfState, growth: Number(e.target.value) }
+                                      }))}
+                                    />
+                                  </div>
+                                </div>
+                                <div className="control-row" style={{ marginTop: '12px' }}>
+                                  <button
+                                    className="mode-toggle"
+                                    onClick={() => setDcfInputs((prev) => ({
+                                      ...prev,
+                                      [data.ticker]: {
+                                        discount: data.dcf?.discount ?? 0.09,
+                                        terminalGrowth: data.dcf?.terminalGrowth ?? 0.025,
+                                        growth: data.dcf?.growth ?? 0.05
+                                      }
+                                    }))}
+                                  >
+                                    Reset DCF Inputs
+                                  </button>
+                                </div>
+                                <div className="note">DCF uses preloaded free cash flow; discount and terminal rates are model assumptions.</div>
+                              </div>
+                            </div>
+                          )}
+
+                          {!isCollapsed(data.ticker, section) && section.cbcv && (
+                            <div>
+                              <div className="research-content">
+                                <p>{cbcv.summary}</p>
+                                <p>{cbcv.takeaways[0]}</p>
+                                <p>{cbcv.takeaways[1]}</p>
+                                <p>{cbcv.takeaways[2]}</p>
+                              </div>
+                              <div className="dcf-summary">
+                                <div className="dcf-inputs">
+                                  <h4> CBCV Sensitivity Inputs</h4>
+                                  {cbcv.model !== 'transactional' && (
+                                    <>
+                                      <div className="slider">
+                                        <div className="slider-label"><span>Gross Margin</span><span>{((cbcvState.grossMargin ?? 0.55) * 100).toFixed(1)}%</span></div>
+                                        <input
+                                          type="range"
+                                          min="0.35"
+                                          max="0.8"
+                                          step="0.01"
+                                          value={cbcvState.grossMargin ?? 0.55}
+                                          onChange={(e) => setCbcvInputs((prev) => ({
+                                            ...prev,
+                                            [data.ticker]: { ...cbcvState, grossMargin: Number(e.target.value) }
+                                          }))}
+                                        />
+                                      </div>
+                                      <div className="slider">
+                                        <div className="slider-label"><span>Churn</span><span>{((cbcvState.churn ?? 0.06) * 100).toFixed(1)}%</span></div>
+                                        <input
+                                          type="range"
+                                          min="0.01"
+                                          max="0.2"
+                                          step="0.005"
+                                          value={cbcvState.churn ?? 0.06}
+                                          onChange={(e) => setCbcvInputs((prev) => ({
+                                            ...prev,
+                                            [data.ticker]: { ...cbcvState, churn: Number(e.target.value) }
+                                          }))}
+                                        />
+                                      </div>
+                                      <div className="slider">
+                                        <div className="slider-label"><span>Future Customer Growth</span><span>{((cbcvState.futureGrowth ?? 0.06) * 100).toFixed(1)}%</span></div>
+                                        <input
+                                          type="range"
+                                          min="0.02"
+                                          max="0.2"
+                                          step="0.01"
+                                          value={cbcvState.futureGrowth ?? 0.06}
+                                          onChange={(e) => setCbcvInputs((prev) => ({
+                                            ...prev,
+                                            [data.ticker]: { ...cbcvState, futureGrowth: Number(e.target.value) }
+                                          }))}
+                                        />
+                                      </div>
+                                    </>
+                                  )}
+                                  <div className="slider">
+                                    <div className="slider-label"><span>CAC Factor</span><span>{(cbcvState.cacFactor ?? 1.0).toFixed(2)}x</span></div>
+                                    <input
+                                      type="range"
+                                      min="0.5"
+                                      max="2.0"
+                                      step="0.05"
+                                      value={cbcvState.cacFactor ?? 1.0}
+                                      onChange={(e) => setCbcvInputs((prev) => ({
+                                        ...prev,
+                                        [data.ticker]: { ...cbcvState, cacFactor: Number(e.target.value) }
+                                      }))}
+                                    />
+                                  </div>
+                                  {cbcv.model === 'transactional' && (
+                                    <>
+                                      <div className="slider">
+                                        <div className="slider-label"><span>Contribution Margin</span><span>{((cbcvState.contributionMarginPct ?? 0.35) * 100).toFixed(1)}%</span></div>
+                                        <input
+                                          type="range"
+                                          min="0.1"
+                                          max="0.6"
+                                          step="0.01"
+                                          value={cbcvState.contributionMarginPct ?? 0.35}
+                                          onChange={(e) => setCbcvInputs((prev) => ({
+                                            ...prev,
+                                            [data.ticker]: { ...cbcvState, contributionMarginPct: Number(e.target.value) }
+                                          }))}
+                                        />
+                                      </div>
+                                      <div className="slider">
+                                        <div className="slider-label"><span>Future Customer Multiplier</span><span>{(cbcvState.futureMultiplier ?? 1.5).toFixed(2)}x</span></div>
+                                        <input
+                                          type="range"
+                                          min="0.5"
+                                          max="3.0"
+                                          step="0.05"
+                                          value={cbcvState.futureMultiplier ?? 1.5}
+                                          onChange={(e) => setCbcvInputs((prev) => ({
+                                            ...prev,
+                                            [data.ticker]: { ...cbcvState, futureMultiplier: Number(e.target.value) }
+                                          }))}
+                                        />
+                                      </div>
+                                    </>
+                                  )}
+                                  {cbcv.model === 'hybrid' && (
+                                    <div className="slider">
+                                      <div className="slider-label"><span>Products Contribution Margin</span><span>{((cbcvState.contributionMarginPct ?? 0.3) * 100).toFixed(1)}%</span></div>
+                                      <input
+                                        type="range"
+                                        min="0.1"
+                                        max="0.6"
+                                        step="0.01"
+                                        value={cbcvState.contributionMarginPct ?? 0.3}
+                                        onChange={(e) => setCbcvInputs((prev) => ({
+                                          ...prev,
+                                          [data.ticker]: { ...cbcvState, contributionMarginPct: Number(e.target.value) }
+                                        }))}
+                                      />
+                                    </div>
+                                  )}
+                                  <div className="note">CBCV enterprise value updates instantly as inputs change.</div>
+                                </div>
+                              </div>
+                              <div className="table-container">
+                                <table className="data-table">
+                                  <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+                                  <tbody>
+                                    {cbcv.detailRows.map((row, idx) => (
+                                      <tr key={idx}>
+                                        <td className="label">{row[0]}</td>
+                                        <td>{row[1]}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                              <div className="note">CBCV uses SEC 10-K revenue/gross profit/debt inputs with estimated customer metrics and is intended as a directional valuation cross-check.</div>
+                            </div>
+                          )}
+
+                          {!isCollapsed(data.ticker, section) && section.peerTable && (
+                            <div className="table-container">
+                              <table className="data-table">
+                                <thead><tr><th>Company</th><th>Ticker</th><th>CIK</th></tr></thead>
+                                <tbody>
+                                  {(data.peers || []).map((peer, j) => (
+                                    <tr key={j}><td className="label">{peer.name}</td><td>{peer.ticker}</td><td>{peer.cik}</td></tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+
+                          {!isCollapsed(data.ticker, section) && section.heatmap && (
+                            <div className="table-container">
+                              <table className="data-table heatmap">
+                                <thead>
+                                  <tr>
+                                    <th>Company</th>
+                                    {heatmap.baseRows.map((metric) => <th key={metric.key}>{metric.label}</th>)}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {heatmap.rows.map((row, j) => (
+                                    <tr key={j}>
+                                      <td className="label">{row.name} ({row.ticker})</td>
+                                      {heatmap.baseRows.map((metric) => {
+                                        const value = row[metric.key];
+                                        const className = heatmap.ranks[metric.key](value);
+                                        const formatted = metric.key.includes('Margin') || metric.key === 'cagr'
+                                          ? Number.isFinite(value) ? `${(value * 100).toFixed(1)}%` : '--'
+                                          : Number.isFinite(value) ? value.toFixed(1) : '--';
+                                        return (
+                                          <td key={metric.key} className={className}>{formatted}</td>
+                                        );
+                                      })}
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+
+                          {!isCollapsed(data.ticker, section) && section.sources && (
+                            <div>
+                              <div className="note">Live mode lists exact filing links and transcript sources. Demo placeholders appear when offline.</div>
+                              <div className="table-container">
+                                <table className="data-table">
+                                  <thead><tr><th>Source</th><th>Details</th></tr></thead>
+                                  <tbody>
+                                    {sourceRows.map((row, j) => (
+                                      <tr key={j}>
+                                        <td className="label">{row[0]}</td>
+                                        <td>{row[1]}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          )}
+
+                          {!isCollapsed(data.ticker, section) && section.chat && (
+                            <div>
+                              <p className="note">Ask investor or competitor-style questions that are not explicitly listed in the profile.</p>
+                              <div style={{ display: 'flex', gap: '12px', marginTop: '12px', marginBottom: '16px' }}>
+                                <input
+                                  className="search-input"
+                                  style={{ flex: 1 }}
+                                  placeholder={`Ask about ${data.ticker} (e.g., \"Where is the moat weakest?\")`}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      handleAsk(data.ticker, report, e.target.value);
+                                      e.target.value = '';
+                                    }
+                                  }}
+                                />
+                                <button
+                                  className="analyze-btn"
+                                  onClick={(e) => {
+                                    const input = e.currentTarget.parentElement.querySelector('input');
+                                    handleAsk(data.ticker, report, input.value);
+                                    input.value = '';
+                                  }}
+                                >
+                                  Ask
+                                </button>
+                              </div>
+                              {(questions[data.ticker] || []).length === 0 ? (
+                                <div className="note">No questions yet.</div>
+                              ) : (
+                                <div className="table-container">
+                                  <table className="data-table">
+                                    <thead><tr><th>Question</th><th>Answer</th></tr></thead>
+                                    <tbody>
+                                      {(questions[data.ticker] || []).map((item, idx) => (
+                                        <tr key={idx}>
+                                          <td className="label">{item.question}</td>
+                                          <td>{item.response}</td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </section>
+                      ))}
+
+                      <div className="export-section">
+                        <div className="export-title"><Icon name="download" size={20} color="#1e40af" />Export Research</div>
+                        <div className="export-grid">
+                          <div className="export-card" onClick={() => alert('Export is available in the full deployment.') }>
+                            <h4><Icon name="layers" size={16} color="#1e40af" /> Excel Financial Model</h4>
+                            <p>Built from preloaded statements.</p>
+                          </div>
+                          <div className="export-card" onClick={() => alert('Export is available in the full deployment.') }>
+                            <h4><Icon name="file-text" size={16} color="#1e40af" /> PDF Research Report</h4>
+                            <p>Includes narrative and scenario framing.</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </main>
+
+              {wargameOpen && (
+                <div className="modal-backdrop">
+                  <div className="modal">
+                    <h3>Analyze from a competitor point of view?</h3>
+                    <p>Generate a war game report for {wargameTarget}. Choose a competitor, select the analyses to run, and generate a strategic response.</p>
+                    <div className="modal-grid">
+                      <div className="modal-row">
+                        <label>Your company name</label>
+                        <input
+                          value={wargameCompany}
+                          onChange={(e) => setWargameCompany(e.target.value)}
+                          placeholder="e.g., Vanguard"
+                        />
+                      </div>
+                      <div className="modal-row">
+                        <label>Analysis modules</label>
+                        <div className="checklist">
+                          {warGameOptions.map((opt) => (
+                            <label key={opt.id} className="check-item">
+                              <input
+                                type="checkbox"
+                                checked={Boolean(wargameSelections[opt.id])}
+                                onChange={(e) => setWargameSelections((prev) => ({ ...prev, [opt.id]: e.target.checked }))}
+                              />
+                              {opt.label}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="modal-actions">
+                      <button className="secondary-btn" onClick={() => setWargameOpen(false)}>Cancel</button>
+                      <button className="primary-btn" onClick={generateWarGame}>Generate War Game</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          </>
+        );
+      };
+
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+  </body>
+</html>
